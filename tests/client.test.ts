@@ -14,7 +14,6 @@ describe('CraftClient', () => {
   });
 
   it('should create a client with required configuration', () => {
-
     // Check if client has required methods
     expect(client).toHaveProperty('query');
     expect(client).toHaveProperty('ping');
@@ -26,6 +25,24 @@ describe('CraftClient', () => {
     expect(typeof client.ping).toBe('function');
     expect(typeof client.getEntries).toBe('function');
     expect(typeof client.getEntry).toBe('function');
+  });
+
+  it('should throw an error when apiKey is not provided', () => {
+    expect(() => {
+      createCraftClient({
+        apiKey: '',
+        baseUrl: 'https://example.com/api'
+      });
+    }).toThrow('apiKey is required');
+  });
+
+  it('should throw an error when baseUrl is not provided', () => {
+    expect(() => {
+      createCraftClient({
+        apiKey: '4G6leis24EdDxmrJN7uAypEiUIDuoq7u',
+        baseUrl: ''
+      });
+    }).toThrow('baseUrl is required');
   });
 
   it('should make GraphQL requests with correct configuration', async () => {

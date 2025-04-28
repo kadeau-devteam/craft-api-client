@@ -30,6 +30,14 @@ export interface EntryQueryOptions extends Record<string, unknown> {
 }
 
 function createCraftClient(config: CraftClientConfig) {
+  // Validate required parameters
+  if (!config.apiKey) {
+    throw new Error('apiKey is required');
+  }
+  if (!config.baseUrl) {
+    throw new Error('baseUrl is required');
+  }
+
   // True privacy through closure
   const apiKey = config.apiKey;
   const baseUrl = config.baseUrl;
