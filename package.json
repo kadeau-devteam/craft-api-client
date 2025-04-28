@@ -1,6 +1,6 @@
 {
   "name": "craft-api-client",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A TypeScript client library for interacting with the Craft CMS API",
   "type": "module",
   "main": "dist/src/index.js",
@@ -26,7 +26,14 @@
     "prepublishOnly": "pnpm test && pnpm build",
     "publish": "npm publish --access public"
   },
-  "keywords": ["craft", "cms", "api", "client", "graphql", "typescript"],
+  "keywords": [
+    "craft",
+    "cms",
+    "api",
+    "client",
+    "graphql",
+    "typescript"
+  ],
   "author": "Kadeau LLC",
   "license": "ISC",
   "repository": {
