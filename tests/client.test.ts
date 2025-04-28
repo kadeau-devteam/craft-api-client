@@ -1,12 +1,19 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import createCraftClient from '../src/index.js';
 
 describe('CraftClient', () => {
-  it('should create a client with required configuration', () => {
-    const client = createCraftClient({
-      apiKey: 'test-key',
-      baseUrl: 'https://api.example.com'
+  let client;
+
+  beforeEach(() => {
+    // Create a new client before each test to avoid duplicating client creation in every test
+    // Each test will use this shared client instance after setting up its own mocks
+    client = createCraftClient({
+      apiKey: '4G6leis24EdDxmrJN7uAypEiUIDuoq7u',
+      baseUrl: 'https://mercury-sign.frb.io/api'
     });
+  });
+
+  it('should create a client with required configuration', () => {
 
     // Check if client has required methods
     expect(client).toHaveProperty('query');
@@ -29,23 +36,18 @@ describe('CraftClient', () => {
 
     vi.stubGlobal('fetch', mockFetch);
 
-    const client = createCraftClient({
-      apiKey: 'test-key',
-      baseUrl: 'https://api.example.com'
-    });
-
     await client.query({
       query: 'test query',
       variables: { test: 'variable' }
     });
 
     expect(mockFetch).toHaveBeenCalledWith(
-      'https://api.example.com/graphql',
+      'https://mercury-sign.frb.io/api',
       expect.objectContaining({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer test-key'
+          'Authorization': 'Bearer 4G6leis24EdDxmrJN7uAypEiUIDuoq7u'
         },
         body: expect.any(String)
       })
@@ -62,11 +64,6 @@ describe('CraftClient', () => {
 
     vi.stubGlobal('fetch', mockFetch);
 
-    const client = createCraftClient({
-      apiKey: 'test-key',
-      baseUrl: 'https://api.example.com'
-    });
-
     await expect(client.query({
       query: 'test query'
     })).rejects.toThrow('GraphQL Error: Test error');
@@ -79,11 +76,6 @@ describe('CraftClient', () => {
     });
 
     vi.stubGlobal('fetch', mockFetch);
-
-    const client = createCraftClient({
-      apiKey: 'test-key',
-      baseUrl: 'https://api.example.com'
-    });
 
     await expect(client.query({
       query: 'test query'
@@ -98,21 +90,16 @@ describe('CraftClient', () => {
 
     vi.stubGlobal('fetch', mockFetch);
 
-    const client = createCraftClient({
-      apiKey: 'test-key',
-      baseUrl: 'https://api.example.com'
-    });
-
     const result = await client.ping();
 
     expect(result).toBe('pong');
     expect(mockFetch).toHaveBeenCalledWith(
-      'https://api.example.com/graphql',
+      'https://mercury-sign.frb.io/api',
       expect.objectContaining({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer test-key'
+          'Authorization': 'Bearer 4G6leis24EdDxmrJN7uAypEiUIDuoq7u'
         },
         body: JSON.stringify({ query: '{ ping }' })
       })
