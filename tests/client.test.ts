@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import createCraftClient from '../src/index.js';
 
 describe('CraftClient', () => {
-  let client;
+  let client: ReturnType<typeof createCraftClient>;
 
   beforeEach(() => {
     // Create a new client before each test to avoid duplicating client creation in every test
