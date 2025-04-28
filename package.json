@@ -23,11 +23,20 @@
     "lint": "eslint src/**/*.ts",
     "clean": "rm -rf dist",
     "prebuild": "pnpm clean",
-    "prepublishOnly": "pnpm test && pnpm build"
+    "prepublishOnly": "pnpm test && pnpm build",
+    "publish": "npm publish --access public"
   },
   "keywords": ["craft", "cms", "api", "client", "graphql", "typescript"],
   "author": "Kadeau LLC",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kadeau/craft-api-client.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kadeau/craft-api-client/issues"
+  },
+  "homepage": "https://github.com/kadeau/craft-api-client#readme",
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.29.0",
     "@typescript-eslint/parser": "^8.29.0",
