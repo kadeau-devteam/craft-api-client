@@ -36,7 +36,7 @@ function createCraftClient(config: CraftClientConfig) {
 
   // Methods are just functions that have access to the closure
   async function query<T = unknown>({ query, variables }: GraphQLQueryOptions): Promise<T> {
-    const response = await fetch(`${baseUrl}/graphql`, {
+    const response = await fetch(baseUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,6 +61,13 @@ function createCraftClient(config: CraftClientConfig) {
   // Return an object with methods
   return {
     query,
+    ping: async (): Promise<string> => {
+      const queryString = `{ ping }`;
+      const result = await query<{ ping: string }>({
+        query: queryString,
+      });
+      return result.ping;
+    },
     getEntries: async (options: EntryQueryOptions = {}) => {
       const queryString = `
         query GetEntries($section: String, $type: String, $limit: Int, $offset: Int, $orderBy: String, $relatedTo: [QueryArgument]) {
@@ -112,4 +119,3 @@ function createCraftClient(config: CraftClientConfig) {
 }
 
 export default createCraftClient;
-
