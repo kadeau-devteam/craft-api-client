@@ -46,6 +46,7 @@
   },
   "homepage": "https://github.com/kadeau/craft-api-client#readme",
   "dependencies": {
+    "@graphql-typed-document-node/core": "^3.2.0",
     "graphql": "^16.8.1",
     "graphql-request": "^6.1.0"
   },

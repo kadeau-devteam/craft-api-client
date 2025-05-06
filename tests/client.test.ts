@@ -1,10 +1,29 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import createCraftClient from '../src/index.js';
 
 describe('CraftClient', () => {
   let client: ReturnType<typeof createCraftClient>;
+  let mockFetch: typeof fetch;
 
   beforeEach(() => {
+    mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ data: { test: 'value' } }),
+      text: () => Promise.resolve(JSON.stringify({ data: { test: 'value' } })),
+      headers: {
+        get: (key: string) => {
+          if (key.toLowerCase() === 'content-type') {
+            return 'application/json';
+          }
+          return null;
+        },
+        forEach: (callback: (value: string, key: string) => void) => {
+          callback('application/json', 'content-type');
+        },
+      },
+    });
+    vi.stubGlobal('fetch', mockFetch);
+
     // Create a new client before each test to avoid duplicating client creation in every test
     // Each test will use this shared client instance after setting up its own mocks
     client = createCraftClient({
@@ -12,6 +31,11 @@ describe('CraftClient', () => {
       baseUrl: 'https://mercury-sign.frb.io/api'
     });
   });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
 
   it('should create a client with required configuration', () => {
     // Check if client has required methods
@@ -45,18 +69,37 @@ describe('CraftClient', () => {
     }).toThrow('baseUrl is required');
   });
 
+  it('should call fetch when query is run', async () => {
+    await client.query({ query: '{ test }' });
+    expect(mockFetch).toHaveBeenCalled();
+  });
+
+
   it('should make GraphQL requests with correct configuration', async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ data: { test: 'data' } })
+      json: () => Promise.resolve({ data: { test: 'data' } }),
+      text: () => Promise.resolve(JSON.stringify({ data: { test: 'data' } })),
+      headers: {
+        forEach: () => {},
+      },
     });
 
+    // Stub fetch BEFORE creating the client
     vi.stubGlobal('fetch', mockFetch);
 
+    // Now create the client, after fetch is mocked
+    client = createCraftClient({
+      apiKey: '4G6leis24EdDxmrJN7uAypEiUIDuoq7u',
+      baseUrl: 'https://mercury-sign.frb.io/api'
+    });
+
     await client.query({
-      query: 'test query',
+      query: '{ test }', // ✅ Valid GraphQL
       variables: { test: 'variable' }
     });
+
+    expect(mockFetch).toHaveBeenCalled();
 
     expect(mockFetch).toHaveBeenCalledWith(
       'https://mercury-sign.frb.io/api',
@@ -76,33 +119,47 @@ describe('CraftClient', () => {
       ok: true,
       json: () => Promise.resolve({ 
         errors: [{ message: 'Test error' }] 
-      })
+      }),
+      text: () => Promise.resolve(JSON.stringify({ 
+        errors: [{ message: 'Test error' }] 
+      })),
+      headers: {
+        forEach: () => {},
+      },
     });
 
     vi.stubGlobal('fetch', mockFetch);
 
     await expect(client.query({
-      query: 'test query'
+      query: '{ test }'
     })).rejects.toThrow('GraphQL Error: Test error');
   });
 
   it('should handle network errors', async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: false,
-      statusText: 'Network Error'
+      statusText: 'Network Error',
+      text: () => Promise.resolve('Network Error'),
+      headers: {
+        forEach: () => {},
+      },
     });
 
     vi.stubGlobal('fetch', mockFetch);
 
     await expect(client.query({
-      query: 'test query'
+      query: '{ test }'
     })).rejects.toThrow('GraphQL request failed: Network Error');
   });
 
   it('should return pong when pinging the API', async () => {
     const mockFetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve({ data: { ping: 'pong' } })
+      json: () => Promise.resolve({ data: { ping: 'pong' } }),
+      text: () => Promise.resolve(JSON.stringify({ data: { ping: 'pong' } })),
+      headers: {
+        forEach: () => {},
+      },
     });
 
     vi.stubGlobal('fetch', mockFetch);
@@ -134,7 +191,19 @@ describe('CraftClient', () => {
             customField: 'Custom Value' 
           } 
         } 
-      })
+      }),
+      text: () => Promise.resolve(JSON.stringify({ 
+        data: { 
+          customData: { 
+            id: '123', 
+            title: 'Test Title', 
+            customField: 'Custom Value' 
+          } 
+        } 
+      })),
+      headers: {
+        forEach: () => {},
+      },
     });
 
     vi.stubGlobal('fetch', mockFetch);

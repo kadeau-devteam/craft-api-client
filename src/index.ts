@@ -5,7 +5,7 @@ import type {
 import { 
   getSdk, 
   Entry 
-} from './generated/sdk.js';
+} from './generated/graphql.js';
 
 export interface CraftClientConfig {
   apiKey: string;
@@ -39,7 +39,16 @@ export interface QueryOptions {
 // Re-export types from generated SDK
 export { Entry };
 
-function createCraftClient(config: CraftClientConfig) {
+function createCraftClient(config: CraftClientConfig): {
+  sdk: ReturnType<typeof getSdk>;
+  client: GraphQLClient;
+  createSectionQuery: <T = any>(sectionName: string, options?: SectionQueryOptions) => (variables?: Record<string, unknown>) => Promise<T>;
+  createCustomQuery: <TVariables = Record<string, unknown>, TData = unknown>(options: CustomQueryOptions<TVariables, TData>) => (variables: TVariables) => Promise<TData>;
+  query: (options: QueryOptions) => Promise<any>;
+  ping: () => Promise<string>;
+  getEntries: (options?: EntryQueryOptions) => Promise<any>;
+  getEntry: (id: string) => Promise<any>;
+} {
   // Validate required parameters
   if (!config.apiKey) {
     throw new Error('apiKey is required');
@@ -53,6 +62,8 @@ function createCraftClient(config: CraftClientConfig) {
     headers: {
       'Authorization': `Bearer ${config.apiKey}`,
     },
+    fetch: fetch, // Use global fetch to ensure it can be mocked in tests
+    errorPolicy: 'all', // Return data even if there are errors
   });
 
   // Get the generated SDK
