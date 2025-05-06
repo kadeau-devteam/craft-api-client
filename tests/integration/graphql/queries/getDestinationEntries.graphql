@@ -1,0 +1,11 @@
+query GetNewsEntries($section: [String], $limit: Int, $orderBy: String) {
+  entries(section: $section, limit: $limit, orderBy: $orderBy) {
+    id
+    title
+    type
+    postDate
+    section {
+      handle
+    }
+  }
+}

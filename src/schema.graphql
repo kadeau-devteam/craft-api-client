@@ -4,7 +4,7 @@
 type Query {
   ping: String!
   entries(
-    section: String
+    section: [String]
     type: String
     limit: Int
     offset: Int
@@ -22,6 +22,7 @@ type Entry {
   slug: String!
   type: String!
   section: Section!
+  postDate: String!
 }
 
 type Section {
