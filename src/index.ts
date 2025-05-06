@@ -63,7 +63,6 @@ function createCraftClient(config: CraftClientConfig): {
       'Authorization': `Bearer ${config.apiKey}`,
     },
     fetch: fetch, // Use global fetch to ensure it can be mocked in tests
-    errorPolicy: 'all', // Return data even if there are errors
   });
 
   // Get the generated SDK
