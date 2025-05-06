@@ -1,23 +1,25 @@
+import { GraphQLClient } from 'graphql-request';
+import type {
+  GetEntriesQueryVariables,
+} from './generated/graphql.js';
+import { 
+  getSdk, 
+  Entry 
+} from './generated/sdk.js';
+
 export interface CraftClientConfig {
   apiKey: string;
   baseUrl: string;
 }
 
-export interface GraphQLQueryOptions {
-  query: string;
-  variables?: Record<string, unknown>;
+export interface SectionQueryOptions {
+  fields?: string[];
+  filter?: Record<string, unknown>;
 }
 
-// Craft CMS specific types
-export interface Entry {
-  id: string;
-  title: string;
-  slug: string;
-  type: string;
-  section: {
-    handle: string;
-  };
-  // Add more fields as needed
+export interface CustomQueryOptions<TVariables = Record<string, unknown>, TData = unknown> {
+  query: string;
+  transformResponse?: (data: any) => TData;
 }
 
 export interface EntryQueryOptions extends Record<string, unknown> {
@@ -29,6 +31,14 @@ export interface EntryQueryOptions extends Record<string, unknown> {
   relatedTo?: string[];
 }
 
+export interface QueryOptions {
+  query: string;
+  variables?: Record<string, unknown>;
+}
+
+// Re-export types from generated SDK
+export { Entry };
+
 function createCraftClient(config: CraftClientConfig) {
   // Validate required parameters
   if (!config.apiKey) {
@@ -38,89 +48,83 @@ function createCraftClient(config: CraftClientConfig) {
     throw new Error('baseUrl is required');
   }
 
-  // True privacy through closure
-  const apiKey = config.apiKey;
-  const baseUrl = config.baseUrl;
+  // Create GraphQL client
+  const client = new GraphQLClient(config.baseUrl, {
+    headers: {
+      'Authorization': `Bearer ${config.apiKey}`,
+    },
+  });
 
-  // Methods are just functions that have access to the closure
-  async function query<T = unknown>({ query, variables }: GraphQLQueryOptions): Promise<T> {
-    const response = await fetch(baseUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({ query, variables }),
-    });
+  // Get the generated SDK
+  const sdk = getSdk(client);
 
-    if (!response.ok) {
-      throw new Error(`GraphQL request failed: ${response.statusText}`);
-    }
+  // Helper function to create a section query
+  function createSectionQuery<T = any>(sectionName: string, options: SectionQueryOptions = {}) {
+    const { fields = ['id', 'title'] } = options;
 
-    const result = await response.json();
+    return async (variables: Record<string, unknown> = {}) => {
+      // Use the SectionQuery from the generated SDK
+      // This is a simplified version - in a real implementation,
+      // you would need to dynamically generate the query or use fragments
+      const result = await sdk.SectionQuery({
+        sectionName,
+        ...variables
+      });
 
-    if (result.errors) {
-      throw new Error(`GraphQL Error: ${result.errors[0].message}`);
-    }
+      return result as unknown as T;
+    };
+  }
 
-    return result.data as T;
+  // Helper function to create a custom query
+  function createCustomQuery<TVariables = Record<string, unknown>, TData = unknown>(
+    options: CustomQueryOptions<TVariables, TData>
+  ) {
+    const { query, transformResponse } = options;
+
+    return async (variables: TVariables) => {
+      // Execute the custom query using the GraphQL client
+      const result = await client.request(query, variables as Record<string, unknown>);
+
+      // Transform the response if a transform function is provided
+      if (transformResponse) {
+        return transformResponse(result);
+      }
+
+      return result as TData;
+    };
   }
 
   // Return an object with methods
   return {
-    query,
+    // Expose the raw SDK for advanced usage
+    sdk,
+
+    // Expose the raw client for custom queries
+    client,
+
+    // Helper methods
+    createSectionQuery,
+    createCustomQuery,
+
+    // Direct query method for tests and simple queries
+    query: async (options: QueryOptions) => {
+      const { query, variables } = options;
+      return client.request(query, variables);
+    },
+
+    // Convenience methods that map to the generated SDK
     ping: async (): Promise<string> => {
-      const queryString = `{ ping }`;
-      const result = await query<{ ping: string }>({
-        query: queryString,
-      });
+      const result = await sdk.Ping();
       return result.ping;
     },
+
     getEntries: async (options: EntryQueryOptions = {}) => {
-      const queryString = `
-        query GetEntries($section: String, $type: String, $limit: Int, $offset: Int, $orderBy: String, $relatedTo: [QueryArgument]) {
-          entries(
-            section: $section
-            type: $type
-            limit: $limit
-            offset: $offset
-            orderBy: $orderBy
-            relatedTo: $relatedTo
-          ) {
-            id
-            title
-            slug
-            type
-            section {
-              handle
-            }
-          }
-        }
-      `;
-      const result = await query<{ entries: Entry[] }>({
-        query: queryString,
-        variables: options,
-      });
+      const result = await sdk.GetEntries(options as GetEntriesQueryVariables);
       return result.entries;
     },
+
     getEntry: async (id: string) => {
-      const queryString = `
-        query GetEntry($id: ID!) {
-          entry(id: $id) {
-            id
-            title
-            slug
-            type
-            section {
-              handle
-            }
-          }
-        }
-      `;
-      const result = await query<{ entry: Entry | null }>({
-        query: queryString,
-        variables: { id },
-      });
+      const result = await sdk.GetEntry({ id });
       return result.entry;
     },
   };

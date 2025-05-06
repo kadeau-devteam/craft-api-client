@@ -1,0 +1,11 @@
+query GetEntry($id: ID!) {
+  entry(id: $id) {
+    id
+    title
+    slug
+    type
+    section {
+      handle
+    }
+  }
+}

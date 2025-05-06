@@ -1,0 +1,12 @@
+# This is a template for section queries
+# It should be customized for each section
+
+query SectionQuery($sectionName: String!) {
+  entries(section: $sectionName) {
+    ... on Entry {
+      id
+      title
+      # Add more fields as needed
+    }
+  }
+}

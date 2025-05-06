@@ -7,3 +7,6 @@ coverage/
 .pnpm-debug.log*
 
 /.idea/
+
+# Generated files
+src/generated/

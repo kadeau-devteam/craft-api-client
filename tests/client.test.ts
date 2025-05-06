@@ -122,4 +122,77 @@ describe('CraftClient', () => {
       })
     );
   });
+
+  it('should create a custom query function with type safety', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ 
+        data: { 
+          customData: { 
+            id: '123', 
+            title: 'Test Title', 
+            customField: 'Custom Value' 
+          } 
+        } 
+      })
+    });
+
+    vi.stubGlobal('fetch', mockFetch);
+
+    // Define types for the custom query
+    interface CustomQueryVariables {
+      slug: string;
+    }
+
+    interface CustomQueryResult {
+      customData: {
+        id: string;
+        title: string;
+        customField: string;
+      };
+    }
+
+    // Create a custom query function
+    const getCustomData = client.createCustomQuery<CustomQueryVariables, CustomQueryResult>({
+      query: `
+        query GetCustomData($slug: String!) {
+          customData(slug: $slug) {
+            id
+            title
+            customField
+          }
+        }
+      `,
+      transformResponse: (data) => {
+        // Add a transformation to test that functionality
+        return {
+          customData: {
+            ...data.customData,
+            title: data.customData.title.toUpperCase()
+          }
+        };
+      }
+    });
+
+    // Use the custom query function
+    const result = await getCustomData({ slug: 'test-slug' });
+
+    // Check the result
+    expect(result.customData.id).toBe('123');
+    expect(result.customData.title).toBe('TEST TITLE'); // Should be uppercase due to transformation
+    expect(result.customData.customField).toBe('Custom Value');
+
+    // Check that the request was made correctly
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://mercury-sign.frb.io/api',
+      expect.objectContaining({
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer 4G6leis24EdDxmrJN7uAypEiUIDuoq7u'
+        },
+        body: expect.stringContaining('GetCustomData')
+      })
+    );
+  });
 });
