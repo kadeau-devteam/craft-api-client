@@ -20,6 +20,9 @@
   "scripts": {
     "build": "tsc",
     "test": "vitest",
+    "test:unit": "vitest run tests/*.test.ts",
+    "test:integration": "vitest run tests/integration/*.test.ts",
+    "test:all": "vitest run",
     "lint": "eslint src/**/*.ts",
     "clean": "rm -rf dist",
     "prebuild": "pnpm clean",

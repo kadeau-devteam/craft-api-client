@@ -1,0 +1,10 @@
+query AppCustomQuery($section: [String], $limit: Int) {
+  entries(section: $section, limit: $limit) {
+    id
+    title
+    type
+    section {
+      handle
+    }
+  }
+}

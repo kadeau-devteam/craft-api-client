@@ -12,10 +12,6 @@ export interface CraftClientConfig {
   baseUrl: string;
 }
 
-export interface SectionQueryOptions {
-  fields?: string[];
-  filter?: Record<string, unknown>;
-}
 
 export interface CustomQueryOptions<TVariables = Record<string, unknown>, TData = unknown> {
   query: string;
@@ -23,7 +19,7 @@ export interface CustomQueryOptions<TVariables = Record<string, unknown>, TData 
 }
 
 export interface EntryQueryOptions extends Record<string, unknown> {
-  section?: string;
+  section?: string[];
   type?: string;
   limit?: number;
   offset?: number;
@@ -42,7 +38,6 @@ export { Entry };
 function createCraftClient(config: CraftClientConfig): {
   sdk: ReturnType<typeof getSdk>;
   client: GraphQLClient;
-  createSectionQuery: <T = any>(sectionName: string, options?: SectionQueryOptions) => (variables?: Record<string, unknown>) => Promise<T>;
   createCustomQuery: <TVariables = Record<string, unknown>, TData = unknown>(options: CustomQueryOptions<TVariables, TData>) => (variables: TVariables) => Promise<TData>;
   query: (options: QueryOptions) => Promise<any>;
   ping: () => Promise<string>;
@@ -68,22 +63,6 @@ function createCraftClient(config: CraftClientConfig): {
   // Get the generated SDK
   const sdk = getSdk(client);
 
-  // Helper function to create a section query
-  function createSectionQuery<T = any>(sectionName: string, options: SectionQueryOptions = {}) {
-    const { fields = ['id', 'title'] } = options;
-
-    return async (variables: Record<string, unknown> = {}) => {
-      // Use the SectionQuery from the generated SDK
-      // This is a simplified version - in a real implementation,
-      // you would need to dynamically generate the query or use fragments
-      const result = await sdk.SectionQuery({
-        sectionName,
-        ...variables
-      });
-
-      return result as unknown as T;
-    };
-  }
 
   // Helper function to create a custom query
   function createCustomQuery<TVariables = Record<string, unknown>, TData = unknown>(
@@ -113,7 +92,6 @@ function createCraftClient(config: CraftClientConfig): {
     client,
 
     // Helper methods
-    createSectionQuery,
     createCustomQuery,
 
     // Direct query method for tests and simple queries

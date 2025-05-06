@@ -1,4 +1,4 @@
-query GetEntries($section: String, $type: String, $limit: Int, $offset: Int, $orderBy: String, $relatedTo: [QueryArgument]) {
+query GetEntries($section: [String], $type: String, $limit: Int, $offset: Int, $orderBy: String, $relatedTo: [QueryArgument]) {
   entries(
     section: $section
     type: $type

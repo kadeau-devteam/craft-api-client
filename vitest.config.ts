@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig, configDefaults } from 'vitest/config';
 
 export default defineConfig({
   test: {
@@ -7,8 +7,11 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],
-      exclude: ['node_modules/']
+      exclude: [...configDefaults.coverage.exclude, 'tests/integration/**']
+    },
+    testTimeout: 10000, // Longer timeout for integration tests
+    environmentOptions: {
+      // You can add specific environment options here if needed
     }
   }
 });
-

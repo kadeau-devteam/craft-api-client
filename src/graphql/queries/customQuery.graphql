@@ -1,0 +1,7 @@
+query CustomQuery($param: String!) {
+  customData(param: $param) {
+    id
+    title
+    customField
+  }
+}
