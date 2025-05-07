@@ -8,6 +8,75 @@ A TypeScript client library for interacting with the Craft API.
 pnpm add craft-api-client
 ```
 
+### Next.js Configuration
+
+If you're using this library in a Next.js project, you'll need to configure Next.js to handle GraphQL files.
+
+#### Using webpack (default)
+
+Add the following to your `next.config.js`:
+
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  webpack: (config) => {
+    // Add a rule for .graphql files
+    config.module.rules.push({
+      test: /\.(graphql|gql)$/,
+      exclude: /node_modules/,
+      use: [
+        {
+          loader: 'graphql-tag/loader'
+        }
+      ]
+    });
+
+    return config;
+  }
+};
+
+module.exports = nextConfig;
+```
+
+You'll also need to install the graphql-tag loader:
+
+```bash
+pnpm add -D graphql-tag
+```
+
+#### Using Turbopack
+
+If you're using Turbopack, you'll need to configure it differently. Add the following to your `next.config.js`:
+
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    turbo: {
+      rules: {
+        // Configure Turbopack to handle .graphql files
+        '*.graphql': {
+          loaders: ['graphql-tag/loader'],
+          as: 'document',
+        },
+        '*.gql': {
+          loaders: ['graphql-tag/loader'],
+          as: 'document',
+        },
+      },
+    },
+  },
+};
+
+module.exports = nextConfig;
+```
+
+You'll still need to install the graphql-tag loader:
+
+```bash
+pnpm add -D graphql-tag
+```
+
 ## Usage
 
 ```typescript
