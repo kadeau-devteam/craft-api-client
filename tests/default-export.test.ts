@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import craftClient, { createCraftClient } from "../src/index.js";
+import craftClient from "../src/index.js";
 
 describe('Default Export', () => {
   let mockFetch: ReturnType<typeof vi.fn>;
@@ -21,15 +21,15 @@ describe('Default Export', () => {
     vi.unstubAllGlobals();
   });
 
-  it('should export createCraftClient', () => {
-    expect(createCraftClient).toBeDefined();
-    expect(typeof createCraftClient).toBe('function');
+  it('should export craftClient', () => {
+    expect(craftClient).toBeDefined();
+    expect(typeof craftClient).toBe('function');
   });
 
   it('should export craftClient as default export', () => {
     expect(craftClient).toBeDefined();
     expect(typeof craftClient).toBe('function');
-    expect(craftClient).toBe(createCraftClient);
+    expect(craftClient).toBe(craftClient);
   });
 
   it('should create a client using the default export', () => {

@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import {createCraftClient} from "../src/index.js";
+import {craftClient} from "../src/index.js";
 import { gql } from 'graphql-request';
 
 
 describe('CraftClient', () => {
-  let client: ReturnType<typeof createCraftClient>;
+  let client: ReturnType<typeof craftClient>;
   // Use the mockFetch defined in the outer scope, initialized in beforeEach
   let mockFetch: ReturnType<typeof vi.fn>;
 
@@ -27,7 +27,7 @@ describe('CraftClient', () => {
     });
     vi.stubGlobal('fetch', mockFetch);
 
-    client = createCraftClient({
+    client = craftClient({
       apiKey: '4G6leis24EdDxmrJN7uAypEiUIDuoq7u',
       baseUrl: 'https://mercury-sign.frb.io/api'
     });
@@ -52,7 +52,7 @@ describe('CraftClient', () => {
 
   it('should throw an error when apiKey is not provided', () => {
     expect(() => {
-      createCraftClient({
+      craftClient({
         apiKey: '',
         baseUrl: 'https://example.com/api'
       });
@@ -61,7 +61,7 @@ describe('CraftClient', () => {
 
   it('should throw an error when baseUrl is not provided', () => {
     expect(() => {
-      createCraftClient({
+      craftClient({
         apiKey: '4G6leis24EdDxmrJN7uAypEiUIDuoq7u',
         baseUrl: ''
       });

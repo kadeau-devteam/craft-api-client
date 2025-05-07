@@ -6,7 +6,7 @@ export type CraftClient = Sdk & {
   config: CraftClientConfig;
 };
 
-export function createCraftClient(config: CraftClientConfig): CraftClient {
+export function craftClient(config: CraftClientConfig): CraftClient {
   const rawClient = createClient(config);
   const sdk = getSdk(rawClient);
 
@@ -18,4 +18,4 @@ export function createCraftClient(config: CraftClientConfig): CraftClient {
 }
 
 // Default export for easier usage
-export default createCraftClient;
+export default craftClient;
