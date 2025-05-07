@@ -44,7 +44,7 @@ The client exposes the generated SDK and GraphQL client for advanced usage:
 const authorData = await client.sdk.GetAuthor({ id: '456' });
 
 // Use the createCustomQuery method for custom queries with type safety
-import { gql } from 'graphql-request';
+import { gql } from 'craft-api-client';
 
 const query = gql`
   query GetCustomData($slug: String!) {
@@ -55,12 +55,6 @@ const query = gql`
     }
   }
 `;
-
-// You can also import GraphQL queries directly from .graphql files
-import destinationsQuery from './queries/destinations.graphql';
-
-// And use them with the client.query method
-const destinationsData = await client.query(destinationsQuery);
 
 // Create a typed custom query function
 const getCustomData = client.createCustomQuery<{ slug: string }, { entry: { id: string; title: string; customField: string } }>({
@@ -79,6 +73,34 @@ console.log(result.entry.title); // TypeScript knows the shape of the result
 // You can still use the raw client for one-off queries
 const rawResult = await client.client.request(query, { slug: 'my-page' });
 ```
+
+### Using GraphQL Files
+
+You can import GraphQL queries from separate files and use them directly with the client:
+
+```typescript
+// Import a GraphQL query from a file
+import destinationsQuery from './queries/destinations.graphql';
+
+// Use it with the client
+const destinations = await client.query(destinationsQuery);
+
+// You can also use the gql tag for inline queries
+import { gql } from 'craft-api-client';
+
+const inlineQuery = gql`
+  query {
+    entries {
+      id
+      title
+    }
+  }
+`;
+
+const entries = await client.query(inlineQuery);
+```
+
+This approach helps organize your GraphQL queries in separate files, making your code more maintainable.
 
 ### Type Safety
 
@@ -137,139 +159,6 @@ pnpm test
 # Build the project
 pnpm build
 ```
-
-### GraphQL Code Generation
-
-This project uses GraphQL Code Generator to generate TypeScript types and an SDK from GraphQL operations. The generated code provides type safety and autocompletion for GraphQL queries.
-
-To generate the types and SDK:
-
-```bash
-pnpm codegen
-```
-
-This will:
-1. Read the GraphQL schema from `src/schema.graphql`
-2. Process GraphQL operations from `src/graphql/**/*.graphql`
-3. Generate TypeScript types and an SDK in `src/generated/`
-
-When adding new GraphQL operations, add them to the `src/graphql/` directory and run `pnpm codegen` to update the generated code.
-
-### Using Custom GraphQL Queries in Your Application
-
-You can add your own custom GraphQL queries in your application and have them included in the code generation process. This allows you to extend the functionality of the client with your own queries while maintaining type safety.
-
-To use this feature:
-
-1. Create a directory for your custom GraphQL queries in your application, for example:
-   ```
-   src/
-     graphql/
-       queries/
-         customQuery.graphql
-   ```
-
-2. Add your GraphQL queries to this directory. For example, in `customQuery.graphql`:
-   ```graphql
-   query CustomQuery($param: String!) {
-     customData(param: $param) {
-       id
-       title
-       customField
-     }
-   }
-   ```
-
-3. Run the code generation with your custom queries:
-   ```bash
-   CUSTOM_DOCUMENTS="./src/graphql/queries/**/*.graphql" pnpm --filter=craft-api-client codegen:with-custom
-   ```
-
-   Or add a script to your application's package.json:
-   ```json
-   "scripts": {
-     "generate-api-client": "CUSTOM_DOCUMENTS=\"./src/graphql/queries/**/*.graphql\" pnpm --filter=craft-api-client codegen:with-custom"
-   }
-   ```
-
-4. The generated SDK will now include your custom queries, which you can access through the client:
-   ```typescript
-   // The SDK now includes your custom query
-   const result = await client.sdk.CustomQuery({ param: 'value' });
-   console.log(result.customData);
-   ```
-
-This approach allows you to keep your application-specific queries separate from the core client library while still benefiting from type safety and code generation.
-
-### Integration Testing with Custom Queries
-
-To ensure your custom queries work correctly with the API, you can create integration tests. The package includes an example integration test that demonstrates how to test custom queries against a real API:
-
-```typescript
-// tests/integration/custom-query-integration.test.ts
-import { describe, it, expect, beforeAll } from 'vitest';
-import craftClient, { gql } from 'craft-api-client';
-import fs from 'fs';
-import path from 'path';
-
-describe('Custom Query Integration', () => {
-  let client;
-
-  beforeAll(() => {
-    // Create a client that points to the real API
-    client = craftClient({
-      apiKey: 'your-api-key',
-      baseUrl: 'https://your-craft-site.com/api'
-    });
-  });
-
-  it('should execute a custom query using createCustomQuery', async () => {
-    // Create a custom query function using an inline query
-    const getEntries = client.createCustomQuery({
-      query: gql`
-        query GetEntries($limit: Int) {
-          entries(limit: $limit) {
-            id
-            title
-          }
-        }
-      `
-    });
-
-    // Execute the query and verify the result
-    const result = await getEntries({ limit: 3 });
-    expect(result).toHaveProperty('entries');
-  });
-
-  it('should demonstrate how to use custom queries from a file', async () => {
-    // Method 1: Read the query from a .graphql file
-    const queryPath = path.join(__dirname, 'graphql', 'queries', 'appCustomQuery.graphql');
-    const queryContent = fs.readFileSync(queryPath, 'utf8');
-    const query = gql`${queryContent}`;
-
-    // Execute the query using the client's query method
-    const result = await client.query({
-      query,
-      variables: { section: ["news"], limit: 2 }
-    });
-
-    // Method 2: Import the query directly (requires TypeScript/webpack/vite configuration)
-    // import customQuery from './graphql/queries/appCustomQuery.graphql';
-    // const result2 = await client.query(customQuery, { section: ["news"], limit: 2 });
-
-    // Verify the result
-    expect(result).toHaveProperty('entries');
-  });
-});
-```
-
-To run the integration tests:
-
-```bash
-pnpm test:integration
-```
-
-You can adapt this approach to test your own custom queries against your API.
 
 ## License
 
