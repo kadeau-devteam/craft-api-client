@@ -91,56 +91,6 @@ const client = craftClient({
 // Check if the API is available
 const pingResult = await client.ping();
 console.log(pingResult); // 'pong'
-
-// Fetch entries from a specific section
-const entries = await client.getEntries({
-  section: ['news'],
-  limit: 10,
-  orderBy: 'postDate DESC'
-});
-
-// Fetch a specific entry by ID
-const entry = await client.getEntry('123');
-
-```
-
-### Advanced Usage with the Generated SDK
-
-The client exposes the generated SDK and GraphQL client for advanced usage:
-
-```typescript
-// Access the generated SDK directly
-const authorData = await client.sdk.GetAuthor({ id: '456' });
-
-// Use the createCustomQuery method for custom queries with type safety
-import { gql } from 'craft-api-client';
-
-const query = gql`
-  query GetCustomData($slug: String!) {
-    entry(slug: $slug) {
-      id
-      title
-      customField
-    }
-  }
-`;
-
-// Create a typed custom query function
-const getCustomData = client.createCustomQuery<{ slug: string }, { entry: { id: string; title: string; customField: string } }>({
-  query,
-  // Optional: transform the response
-  transformResponse: (data) => {
-    // You can transform the data here if needed
-    return data;
-  }
-});
-
-// Use the custom query function with type safety
-const result = await getCustomData({ slug: 'my-page' });
-console.log(result.entry.title); // TypeScript knows the shape of the result
-
-// You can still use the raw client for one-off queries
-const rawResult = await client.client.request(query, { slug: 'my-page' });
 ```
 
 ### Using GraphQL Files
@@ -170,23 +120,6 @@ const entries = await client.query(inlineQuery);
 ```
 
 This approach helps organize your GraphQL queries in separate files, making your code more maintainable.
-
-### Type Safety
-
-All operations are fully typed, providing excellent autocompletion and type checking:
-
-```typescript
-// TypeScript will show errors for invalid parameters
-const entries = await client.getEntries({
-  section: ['news'],
-  limit: '10' // Error: Type 'string' is not assignable to type 'number'
-});
-
-// Autocomplete for return types
-entries.forEach(entry => {
-  console.log(entry.title); // TypeScript knows that entry has a title property
-});
-```
 
 ## Features
 
