@@ -18,8 +18,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "tsup",
-    "test": "vitest",
+    "build": "npm run codegen && tsup src/index.ts --dts",
+    "test": "vitest run",
     "test:unit": "vitest run tests/*.test.ts",
     "test:integration": "vitest run tests/integration/*.test.ts",
     "test:all": "vitest run",
@@ -51,8 +51,7 @@
   "dependencies": {
     "@graphql-typed-document-node/core": "^3.2.0",
     "graphql": "^16.8.1",
-    "graphql-request": "^6.1.0",
-    "graphql-tag": "^2.12.6"
+    "graphql-request": "^6.1.0"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.0",

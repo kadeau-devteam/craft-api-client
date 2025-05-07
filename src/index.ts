@@ -1,16 +1,18 @@
-import { createClient, CraftClientConfig } from './client.js';
-import * as generated from './generated/client.js'; // automatski generirano
+import {CraftClientConfig, createClient} from "./client.js";
+import { getSdk, Sdk } from '../cms/generated/client.js';
 
-export function createCraftClient(config: CraftClientConfig) {
+export type CraftClient = Sdk & {
+  query: ReturnType<typeof createClient>['request'];
+  config: CraftClientConfig;
+};
+
+export function createCraftClient(config: CraftClientConfig): CraftClient {
   const rawClient = createClient(config);
-
-  const methods = Object.entries(generated).reduce((acc, [key, fn]) => {
-    acc[key] = (variables: any) => fn(rawClient, variables);
-    return acc;
-  }, {} as Record<string, any>);
+  const sdk = getSdk(rawClient);
 
   return {
-    ...methods,
+    ...sdk,
     query: rawClient.request.bind(rawClient),
-  };
+    config: (rawClient as any).config,
+  } as CraftClient;
 }

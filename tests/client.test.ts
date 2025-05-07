@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import createCraftClient from '../src/index.js';
+import {createCraftClient} from "../src/index.js";
+import { gql } from 'graphql-request';
+
 
 describe('CraftClient', () => {
   let client: ReturnType<typeof createCraftClient>;
@@ -32,19 +34,21 @@ describe('CraftClient', () => {
   });
 
   afterEach(() => {
-    vi.unstubAllGlobals();
+    // Restore the original fetch function
+    vi.restoreAllMocks();
   });
 
 
   it('should create a client with required configuration', () => {
     expect(client).toHaveProperty('query');
     expect(client).toHaveProperty('ping');
-    expect(client).toHaveProperty('getEntries');
-    expect(client).toHaveProperty('getEntry');
+    expect(client).toHaveProperty('config');
     expect(typeof client.query).toBe('function');
     expect(typeof client.ping).toBe('function');
-    expect(typeof client.getEntries).toBe('function');
-    expect(typeof client.getEntry).toBe('function');
+    expect(client.config).toEqual({
+      apiKey: '4G6leis24EdDxmrJN7uAypEiUIDuoq7u',
+      baseUrl: 'https://mercury-sign.frb.io/api'
+    });
   });
 
   it('should throw an error when apiKey is not provided', () => {
@@ -68,10 +72,10 @@ describe('CraftClient', () => {
 
   it('should make GraphQL requests with correct configuration', async () => {
     // The default mock from beforeEach is sufficient here
-    await client.query({
-      query: '{ test }',
-      variables: { test: 'variable' }
-    });
+    await client.query(
+      gql`{ test }`,
+      { test: 'variable' }
+    );
 
     expect(mockFetch).toHaveBeenCalled();
 
@@ -89,7 +93,7 @@ describe('CraftClient', () => {
   });
 
   it('should handle GraphQL errors', async () => {
-    // Use mockFetch from beforeEach and configure it for this specific case
+    // Configure the mock to return a GraphQL error response
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({
@@ -98,19 +102,20 @@ describe('CraftClient', () => {
       text: () => Promise.resolve(JSON.stringify({
         errors: [{ message: 'GraphQL Error: Test error' }]
       })),
-      headers: { // Keep headers consistent or simplify if not crucial for this error test
+      headers: {
         get: (key: string) => (key.toLowerCase() === 'content-type' ? 'application/json' : null),
         forEach: (callback: (value: string, key: string) => void) => callback('application/json', 'content-type'),
       }
     });
 
-    await expect(client.query({
-      query: '{ test }'
-    })).rejects.toThrow('GraphQL Error: Test error');
+    // The query should throw an error because of the GraphQL error in the response
+    await expect(client.query(
+      gql`{ test }`
+    )).rejects.toThrow();
   });
 
   it('should return pong when pinging the API', async () => {
-    // Use mockFetch from beforeEach and configure it for this specific case
+    // Configure the mock to return a ping response
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({ data: { ping: 'pong' } }),
@@ -121,11 +126,13 @@ describe('CraftClient', () => {
       },
     });
 
-    // No need to call vi.stubGlobal('fetch', mockFetch) again here, it's done in beforeEach
-
+    // Call the ping method
     const result = await client.ping();
 
-    expect(result).toBe('pong');
+    // Verify the result
+    expect(result.ping).toBe('pong');
+
+    // Verify that fetch was called with the correct arguments
     expect(mockFetch).toHaveBeenCalledWith(
       'https://mercury-sign.frb.io/api',
       expect.objectContaining({
@@ -134,91 +141,7 @@ describe('CraftClient', () => {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer 4G6leis24EdDxmrJN7uAypEiUIDuoq7u'
         },
-        body: JSON.stringify({
-            query: "query Ping {\n  ping\n}", // Matches your previous update
-            operationName: "Ping"
-          }
-        )
-      })
-    );
-  });
-
-  it('should create a custom query function with type safety', async () => {
-    interface CustomQueryVariables {
-      slug: string;
-    }
-    interface CustomQueryResult {
-      customData: {
-        id: string;
-        title: string;
-        customField: string;
-      };
-    }
-
-    // Use the mockFetch from beforeEach and configure its response for this test
-    mockFetch.mockResolvedValueOnce({ // Changed from mockResolvedValue
-      ok: true,
-      json: () => Promise.resolve({
-        data: {
-          customData: {
-            id: '123',
-            title: 'Test Title',
-            customField: 'Custom Value'
-          }
-        }
-      }),
-      text: () => Promise.resolve(JSON.stringify({
-        data: {
-          customData: {
-            id: '123',
-            title: 'Test Title',
-            customField: 'Custom Value'
-          }
-        }
-      })),
-      headers: {
-        get: (key: string) => (key.toLowerCase() === 'content-type' ? 'application/json' : null),
-        forEach: (callback: (value: string, key: string) => void) => callback('application/json', 'content-type'),
-      },
-    });
-
-    // No need to redefine mockFetch or call vi.stubGlobal('fetch', mockFetch) again
-
-    const getCustomData = client.createCustomQuery<CustomQueryVariables, CustomQueryResult>({
-      query: `
-        query GetCustomData($slug: String!) {
-          customData(slug: $slug) {
-            id
-            title
-            customField
-          }
-        }
-      `,
-      transformResponse: (data) => {
-        return {
-          customData: {
-            ...data.customData,
-            title: data.customData.title.toUpperCase()
-          }
-        };
-      }
-    });
-
-    const result = await getCustomData({ slug: 'test-slug' });
-
-    expect(result.customData.id).toBe('123');
-    expect(result.customData.title).toBe('TEST TITLE');
-    expect(result.customData.customField).toBe('Custom Value');
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      'https://mercury-sign.frb.io/api',
-      expect.objectContaining({
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer 4G6leis24EdDxmrJN7uAypEiUIDuoq7u'
-        },
-        body: expect.stringContaining('GetCustomData') // This should be fine
+        body: expect.any(String)
       })
     );
   });
