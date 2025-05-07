@@ -56,6 +56,12 @@ const query = gql`
   }
 `;
 
+// You can also import GraphQL queries directly from .graphql files
+import destinationsQuery from './queries/destinations.graphql';
+
+// And use them with the client.query method
+const destinationsData = await client.query(destinationsQuery);
+
 // Create a typed custom query function
 const getCustomData = client.createCustomQuery<{ slug: string }, { entry: { id: string; title: string; customField: string } }>({
   query,
@@ -236,7 +242,7 @@ describe('Custom Query Integration', () => {
   });
 
   it('should demonstrate how to use custom queries from a file', async () => {
-    // Read the query from a .graphql file
+    // Method 1: Read the query from a .graphql file
     const queryPath = path.join(__dirname, 'graphql', 'queries', 'appCustomQuery.graphql');
     const queryContent = fs.readFileSync(queryPath, 'utf8');
     const query = gql`${queryContent}`;
@@ -246,6 +252,10 @@ describe('Custom Query Integration', () => {
       query,
       variables: { section: ["news"], limit: 2 }
     });
+
+    // Method 2: Import the query directly (requires TypeScript/webpack/vite configuration)
+    // import customQuery from './graphql/queries/appCustomQuery.graphql';
+    // const result2 = await client.query(customQuery, { section: ["news"], limit: 2 });
 
     // Verify the result
     expect(result).toHaveProperty('entries');
