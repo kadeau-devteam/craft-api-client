@@ -1,5 +1,5 @@
 import {CraftClientConfig, createClient} from "./client.js";
-import { getSdk, Sdk } from '../cms/generated/client.js';
+import { getSdk, Sdk } from './generated/client.js';
 import { gql as originalGql } from 'graphql-request';
 import { DocumentNode, parse } from 'graphql';
 
@@ -55,7 +55,35 @@ export function gql(literals: TemplateStringsArray | string | DocumentNode, ...p
 }
 
 export type CraftClient = Sdk & {
-  query: ReturnType<typeof createClient>['request'];
+  /**
+   * Execute a GraphQL query and get typed results.
+   * 
+   * @example
+   * ```typescript
+   * // Define your query type
+   * type DestinationsQuery = {
+   *   destinationsEntries: Array<{
+   *     id: string;
+   *     title: string;
+   *   }>;
+   * };
+   * 
+   * // Use the query with type parameter
+   * const result = await client.query<DestinationsQuery>(gql`
+   *   query Destinations {
+   *     destinationsEntries {
+   *       ... on destination_Entry {
+   *         id
+   *         title
+   *       }
+   *     }
+   *   }
+   * `);
+   * 
+   * // Now result is typed as DestinationsQuery
+   * ```
+   */
+  query: <T = any, V = any>(document: string | DocumentNode, variables?: V) => Promise<T>;
   config: CraftClientConfig;
 };
 
@@ -65,7 +93,9 @@ export function craftClient(config: CraftClientConfig): CraftClient {
 
   return {
     ...sdk,
-    query: rawClient.request.bind(rawClient),
+    query: <T = any, V = any>(document: string | DocumentNode, variables?: V): Promise<T> => {
+      return rawClient.request<T>(document, variables);
+    },
     config: (rawClient as any).config,
   } as CraftClient;
 }

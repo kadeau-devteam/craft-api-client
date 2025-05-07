@@ -121,6 +121,37 @@ const entries = await client.query(inlineQuery);
 
 This approach helps organize your GraphQL queries in separate files, making your code more maintainable.
 
+### Type-Safe Queries
+
+You can get fully typed results from your queries by providing a type parameter to the `query` method:
+
+```typescript
+// Define your query type
+type DestinationsQuery = {
+  destinationsEntries: Array<{
+    id: string;
+    title: string;
+  }>;
+};
+
+// Use the query with type parameter
+const result = await client.query<DestinationsQuery>(gql`
+  query Destinations {
+    destinationsEntries {
+      ... on destination_Entry {
+        id
+        title
+      }
+    }
+  }
+`);
+
+// Now result is typed as DestinationsQuery
+console.log(result.destinationsEntries[0].title); // TypeScript knows this is a string
+```
+
+This provides full type safety and autocompletion for your query results.
+
 ## Features
 
 - Modern ESM package
