@@ -16,3 +16,6 @@ export function createCraftClient(config: CraftClientConfig): CraftClient {
     config: (rawClient as any).config,
   } as CraftClient;
 }
+
+// Default export for easier usage
+export default createCraftClient;

@@ -1,92 +1,167 @@
 # Craft API Client
 
-A TypeScript client library for interacting with the Craft API.
+A TypeScript client library for interacting with the Craft CMS API. This library provides a type-safe way to query your Craft CMS GraphQL API with full TypeScript support.
 
 ## Installation
 
 ```bash
+# Using pnpm (recommended)
 pnpm add craft-api-client
+
+# Using npm
+npm install craft-api-client
+
+# Using yarn
+yarn add craft-api-client
 ```
 
 ## Usage
 
 ```typescript
-import createCraftClient from 'craft-api-client';
+// Using named import
+import { createCraftClient } from 'craft-api-client';
 
 // Create a client instance
 const client = createCraftClient({
   apiKey: 'your-craft-api-key',
   baseUrl: 'https://your-craft-site.com/api'
 });
+```
+
+You can also use the default export for a more concise import:
+
+```typescript
+// Using default import
+import craftClient from 'craft-api-client';
+
+// Create a client instance
+const client = craftClient({
+  apiKey: 'your-craft-api-key',
+  baseUrl: 'https://your-craft-site.com/api'
+});
 
 // Check if the API is available
 const pingResult = await client.ping();
-console.log(pingResult); // 'pong'
+console.log(pingResult); // { ping: 'pong' }
+
+// Use the raw query method for custom GraphQL queries
+import { gql } from 'graphql-request';
 
 // Fetch entries from a specific section
-const entries = await client.getEntries({
+const entriesResult = await client.query(gql`
+  query GetEntries($section: [String], $limit: Int, $orderBy: String) {
+    entries(section: $section, limit: $limit, orderBy: $orderBy) {
+      id
+      title
+      slug
+      postDate
+    }
+  }
+`, {
   section: ['news'],
   limit: 10,
   orderBy: 'postDate DESC'
 });
 
 // Fetch a specific entry by ID
-const entry = await client.getEntry('123');
-
+const entryResult = await client.query(gql`
+  query GetEntry($id: ID!) {
+    entry(id: $id) {
+      id
+      title
+      slug
+      postDate
+    }
+  }
+`, {
+  id: '123'
+});
 ```
 
 ### Advanced Usage with the Generated SDK
 
-The client exposes the generated SDK and GraphQL client for advanced usage:
+The client exposes the generated SDK for advanced usage:
 
 ```typescript
 // Access the generated SDK directly
-const authorData = await client.sdk.GetAuthor({ id: '456' });
+// Currently, the SDK only includes the ping query
+const pingResult = await client.ping();
+console.log(pingResult); // { ping: 'pong' }
 
-// Use the createCustomQuery method for custom queries with type safety
+// For custom queries, use the query method
 import { gql } from 'graphql-request';
 
 const query = gql`
-  query GetCustomData($slug: String!) {
-    entry(slug: $slug) {
+  query GetCustomData($id: ID!) {
+    entry(id: $id) {
       id
       title
-      customField
+      slug
+      postDate
     }
   }
 `;
 
-// Create a typed custom query function
-const getCustomData = client.createCustomQuery<{ slug: string }, { entry: { id: string; title: string; customField: string } }>({
-  query,
-  // Optional: transform the response
-  transformResponse: (data) => {
-    // You can transform the data here if needed
-    return data;
+// Use the query method with type safety by defining the response type
+type CustomDataResponse = {
+  entry: {
+    id: string;
+    title: string;
+    slug: string;
+    postDate: string;
   }
-});
+};
 
-// Use the custom query function with type safety
-const result = await getCustomData({ slug: 'my-page' });
+// Execute the query with type safety
+const result = await client.query<CustomDataResponse>(query, { id: '123' });
 console.log(result.entry.title); // TypeScript knows the shape of the result
-
-// You can still use the raw client for one-off queries
-const rawResult = await client.client.request(query, { slug: 'my-page' });
 ```
+
+As you extend the GraphQL schema with your own types and queries, you can generate a more comprehensive SDK using the code generation tools provided with this library.
 
 ### Type Safety
 
 All operations are fully typed, providing excellent autocompletion and type checking:
 
 ```typescript
+import { gql } from 'graphql-request';
+
+// Define the response type for type safety
+type EntriesResponse = {
+  entries: Array<{
+    id: string;
+    title: string;
+    slug: string;
+    postDate: string;
+  }>
+};
+
 // TypeScript will show errors for invalid parameters
-const entries = await client.getEntries({
+const query = gql`
+  query GetEntries($section: [String], $limit: Int) {
+    entries(section: $section, limit: $limit) {
+      id
+      title
+      slug
+      postDate
+    }
+  }
+`;
+
+// This would cause a TypeScript error: Type 'string' is not assignable to type 'number'
+// const result = await client.query<EntriesResponse>(query, {
+//   section: ['news'],
+//   limit: '10' 
+// });
+
+// Correct usage with proper types
+const result = await client.query<EntriesResponse>(query, {
   section: ['news'],
-  limit: '10' // Error: Type 'string' is not assignable to type 'number'
+  limit: 10
 });
 
 // Autocomplete for return types
-entries.forEach(entry => {
+result.entries.forEach(entry => {
   console.log(entry.title); // TypeScript knows that entry has a title property
 });
 ```
@@ -97,10 +172,10 @@ entries.forEach(entry => {
 - Full TypeScript support
 - Tree-shakeable
 - Built with tsup for efficient bundling
-- Custom query generation with type safety
-- Strongly typed GraphQL queries using GraphQL Code Generator
+- Type-safe GraphQL queries
 - Built on graphql-request for efficient API communication
 - Generated SDK for type-safe API interactions
+- GraphQL Code Generator integration for custom schema support
 - Comprehensive test coverage
 
 ## Requirements
@@ -116,17 +191,11 @@ pnpm install
 # Generate GraphQL types and SDK
 pnpm codegen
 
-# Run all tests (unit and integration)
-pnpm test:all
-
-# Run only unit tests
-pnpm test:unit
-
-# Run only integration tests
-pnpm test:integration
-
-# Run tests in watch mode (during development)
+# Run tests
 pnpm test
+
+# Run tests in specific files
+pnpm test tests/client.test.ts
 
 # Build the project
 pnpm build
@@ -144,56 +213,59 @@ pnpm codegen
 
 This will:
 1. Read the GraphQL schema from `src/schema.graphql`
-2. Process GraphQL operations from `src/graphql/**/*.graphql`
-3. Generate TypeScript types and an SDK in `src/generated/`
+2. Process GraphQL operations defined in the project
+3. Generate TypeScript types and an SDK in `cms/generated/`
 
-When adding new GraphQL operations, add them to the `src/graphql/` directory and run `pnpm codegen` to update the generated code.
+The schema in `src/schema.graphql` is a simplified version and should be replaced with the actual schema from your Craft CMS instance for production use.
 
-### Using Custom GraphQL Queries in Your Application
+### Using Custom GraphQL Queries
 
-You can add your own custom GraphQL queries in your application and have them included in the code generation process. This allows you to extend the functionality of the client with your own queries while maintaining type safety.
+You can create custom GraphQL queries to interact with your Craft CMS API. This allows you to fetch exactly the data you need while maintaining type safety.
 
-To use this feature:
+To use custom queries:
 
-1. Create a directory for your custom GraphQL queries in your application, for example:
-   ```
-   src/
-     graphql/
-       queries/
-         customQuery.graphql
-   ```
-
-2. Add your GraphQL queries to this directory. For example, in `customQuery.graphql`:
-   ```graphql
-   query CustomQuery($param: String!) {
-     customData(param: $param) {
-       id
-       title
-       customField
-     }
-   }
-   ```
-
-3. Run the code generation with your custom queries:
-   ```bash
-   CUSTOM_DOCUMENTS="./src/graphql/queries/**/*.graphql" pnpm --filter=craft-api-client codegen:with-custom
-   ```
-
-   Or add a script to your application's package.json:
-   ```json
-   "scripts": {
-     "generate-api-client": "CUSTOM_DOCUMENTS=\"./src/graphql/queries/**/*.graphql\" pnpm --filter=craft-api-client codegen:with-custom"
-   }
-   ```
-
-4. The generated SDK will now include your custom queries, which you can access through the client:
+1. Define your GraphQL query using the `gql` tag from graphql-request:
    ```typescript
-   // The SDK now includes your custom query
-   const result = await client.sdk.CustomQuery({ param: 'value' });
-   console.log(result.customData);
+   import { gql } from 'graphql-request';
+
+   const query = gql`
+     query GetArticles($limit: Int, $category: String) {
+       entries(section: ["articles"], limit: $limit, relatedTo: [$category]) {
+         id
+         title
+         slug
+         postDate
+       }
+     }
+   `;
    ```
 
-This approach allows you to keep your application-specific queries separate from the core client library while still benefiting from type safety and code generation.
+2. Define a TypeScript type for the expected response:
+   ```typescript
+   type ArticlesResponse = {
+     entries: Array<{
+       id: string;
+       title: string;
+       slug: string;
+       postDate: string;
+     }>
+   };
+   ```
+
+3. Execute the query with type safety:
+   ```typescript
+   const result = await client.query<ArticlesResponse>(query, {
+     limit: 10,
+     category: "news"
+   });
+
+   // TypeScript knows the shape of the result
+   result.entries.forEach(article => {
+     console.log(article.title);
+   });
+   ```
+
+This approach allows you to create custom queries for your specific needs while still benefiting from TypeScript's type safety.
 
 ### Integration Testing with Custom Queries
 
