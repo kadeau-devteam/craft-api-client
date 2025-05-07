@@ -96,6 +96,7 @@ entries.forEach(entry => {
 - Modern ESM package
 - Full TypeScript support
 - Tree-shakeable
+- Built with tsup for efficient bundling
 - Custom query generation with type safety
 - Strongly typed GraphQL queries using GraphQL Code Generator
 - Built on graphql-request for efficient API communication
