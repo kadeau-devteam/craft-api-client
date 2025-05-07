@@ -1,5 +1,8 @@
 import {CraftClientConfig, createClient} from "./client.js";
 import { getSdk, Sdk } from '../cms/generated/client.js';
+import { gql } from 'graphql-request';
+
+export { gql };
 
 export type CraftClient = Sdk & {
   query: ReturnType<typeof createClient>['request'];
@@ -17,5 +20,4 @@ export function craftClient(config: CraftClientConfig): CraftClient {
   } as CraftClient;
 }
 
-// Default export for easier usage
 export default craftClient;
