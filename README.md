@@ -1,11 +1,89 @@
-# Craft API Client
+# Craft API Monorepo
 
-A TypeScript client library for interacting with the Craft API.
+This monorepo contains the Craft API Client and a Next.js application that demonstrates its usage.
 
-## Installation
+## Project Structure
+
+```
+craft-api-monorepo/
+├── apps/
+│   └── web/                 # Next.js application
+├── packages/
+│   └── craft-api-client/    # Craft API Client library
+├── package.json             # Root package.json
+├── pnpm-workspace.yaml      # PNPM workspace configuration
+└── turbo.json               # Turborepo configuration
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js >= 20.10.0
+- PNPM >= 10.5.2
+
+### Installation
+
+```bash
+# Install dependencies
+pnpm install
+```
+
+### Development
+
+```bash
+# Build all packages
+pnpm build
+
+# Start development servers
+pnpm dev
+
+# Run tests
+pnpm test
+
+# Lint code
+pnpm lint
+
+# Clean build artifacts
+pnpm clean
+```
+
+## Packages
+
+### craft-api-client
+
+A TypeScript client library for interacting with the Craft CMS API.
+
+#### Installation (when published)
 
 ```bash
 pnpm add craft-api-client
+```
+
+### web (Next.js App)
+
+A Next.js application that demonstrates the usage of the craft-api-client.
+
+#### Environment Variables
+
+The Next.js application requires the following environment variables:
+
+```
+NEXT_PUBLIC_CRAFT_API_KEY=your-craft-api-key
+NEXT_PUBLIC_CRAFT_API_URL=https://your-craft-cms-url/api
+```
+
+Copy the `.env.example` file to `.env.local` in the `apps/web` directory and update the values.
+
+#### Running the Next.js App
+
+```bash
+# From the root of the monorepo
+pnpm dev
+
+# Or specifically for the web app
+cd apps/web
+pnpm dev
 ```
 
 ### Next.js Configuration

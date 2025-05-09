@@ -1,4 +1,6 @@
-import {gql, GraphQLClient, RequestOptions } from 'graphql-request';
+import { GraphQLClient, RequestOptions } from 'graphql-request';
+import { GraphQLError, print } from 'graphql'
+import { DocumentNode } from 'graphql';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -60,21 +62,17 @@ export type PingQueryVariables = Exact<{ [key: string]: never; }>;
 export type PingQuery = { __typename?: 'Query', ping: string };
 
 
-export const PingDocument = gql`
-    query ping {
-  ping
-}
-    `;
+export const PingDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ping"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ping"}}]}}]} as unknown as DocumentNode;
 
 export type SdkFunctionWrapper = <T>(action: (requestHeaders?:Record<string, string>) => Promise<T>, operationName: string, operationType?: string, variables?: any) => Promise<T>;
 
 
 const defaultWrapper: SdkFunctionWrapper = (action, _operationName, _operationType, _variables) => action();
-
+const PingDocumentString = print(PingDocument);
 export function getSdk(client: GraphQLClient, withWrapper: SdkFunctionWrapper = defaultWrapper) {
   return {
-    ping(variables?: PingQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<PingQuery> {
-      return withWrapper((wrappedRequestHeaders) => client.request<PingQuery>(PingDocument, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'ping', 'query', variables);
+    ping(variables?: PingQueryVariables, requestHeaders?: GraphQLClientRequestHeaders): Promise<{ data: PingQuery; errors?: GraphQLError[]; extensions?: any; headers: Headers; status: number; }> {
+        return withWrapper((wrappedRequestHeaders) => client.rawRequest<PingQuery>(PingDocumentString, variables, {...requestHeaders, ...wrappedRequestHeaders}), 'ping', 'query', variables);
     }
   };
 }

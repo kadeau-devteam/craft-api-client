@@ -1,0 +1,32 @@
+# This is a simplified schema for Craft CMS GraphQL API
+# It should be replaced with the actual schema from your Craft CMS instance
+
+type Query {
+  ping: String!
+  entries(
+    section: [String]
+    type: String
+    limit: Int
+    offset: Int
+    orderBy: String
+    relatedTo: [QueryArgument]
+  ): [Entry!]!
+  entry(id: ID!): Entry
+}
+
+scalar QueryArgument
+
+type Entry {
+  id: ID!
+  title: String!
+  slug: String!
+  type: String!
+  section: Section!
+  postDate: String!
+}
+
+type Section {
+  handle: String!
+}
+
+# Add more types as needed based on your Craft CMS instance

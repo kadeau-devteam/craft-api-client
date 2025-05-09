@@ -1,0 +1,14 @@
+#import "./fragments/contentBuilder.graphql"
+
+query TestPageQuery ($section: [String]!) {
+  entry(section: $section, slug: "test", status: ["live", "disabled"]) {
+    ...on page_Entry {
+      uid
+      typeHandle
+      contentBuilder {
+        __typename
+        ...CTAEntry
+      }
+    }
+  }
+}
