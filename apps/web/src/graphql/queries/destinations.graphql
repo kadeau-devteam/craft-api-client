@@ -4,7 +4,6 @@ query Destinations {
       id
       title
       slug
-      postDate
     }
   }
 }
