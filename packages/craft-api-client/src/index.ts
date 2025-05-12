@@ -1,6 +1,4 @@
 import {CraftClientConfig, createClient} from "./client.js";
-import { getSdk, Sdk } from './generated/client.js';
-import { gql as originalGql } from 'graphql-request';
 import { DocumentNode, parse } from 'graphql';
 
 /**
@@ -54,7 +52,7 @@ export function gql(literals: TemplateStringsArray | string | DocumentNode, ...p
   }
 }
 
-export type CraftClient = Sdk & {
+export type CraftClient = {
   /**
    * Execute a GraphQL query and get typed results.
    * 
@@ -87,17 +85,18 @@ export type CraftClient = Sdk & {
   config: CraftClientConfig;
 };
 
-export function craftClient(config: CraftClientConfig): CraftClient {
+export function createCraftClient(config: CraftClientConfig): CraftClient {
   const rawClient = createClient(config);
-  const sdk = getSdk(rawClient);
 
   return {
-    ...sdk,
     query: <T = any, V extends Record<string, any> = Record<string, any>>(document: string | DocumentNode, variables?: V): Promise<T> => {
       return rawClient.request<T>(document, variables);
     },
     config: (rawClient as any).config,
-  } as CraftClient;
+  };
 }
 
-export default craftClient;
+// Keep the old function name for backward compatibility
+export const craftClient = createCraftClient;
+
+export default createCraftClient;
