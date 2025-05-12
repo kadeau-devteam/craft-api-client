@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { createCraftClient, gql } from 'craft-api-client';
 import { server } from '../setup';
 import { http, HttpResponse } from 'msw';
@@ -12,9 +12,7 @@ const mockEntriesData = {
         title: 'Test Entry',
         slug: 'test-entry',
         postDate: '2023-01-01T00:00:00Z',
-        section: {
-          handle: 'test',
-        },
+        sectionId: 'test',
       },
     ],
   },
@@ -71,9 +69,7 @@ describe('craft-api-client integration tests', () => {
         title: string;
         slug: string;
         postDate: string;
-        section: {
-          handle: string;
-        };
+        sectionId: string;
       }>;
     };
 
@@ -85,9 +81,7 @@ describe('craft-api-client integration tests', () => {
           title
           slug
           postDate
-          section {
-            handle
-          }
+          sectionId
         }
       }
     `);
@@ -136,7 +130,7 @@ describe('craft-api-client integration tests', () => {
         // Check if the preview token is included in the headers
         const headers = new Headers(request.headers);
         const previewToken = headers.get('X-Craft-Token');
-        
+
         if (previewToken === 'test-preview-token') {
           return HttpResponse.json(mockPagesData);
         } else {
