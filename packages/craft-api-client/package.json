@@ -1,12 +1,13 @@
 {
   "name": "craft-api-client",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "A TypeScript client library for interacting with the Craft CMS API",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/index.js",
+    "./preview": "./dist/preview.js"
   },
   "sideEffects": false,
   "engines": {
@@ -14,11 +15,12 @@
   },
   "files": [
     "dist",
+    "templates",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
-    "build": "pnpm run codegen && tsup src/index.ts --dts",
+    "build": "pnpm run codegen && tsup",
     "test": "vitest run",
     "test:unit": "vitest run tests/*.test.ts",
     "test:integration": "vitest run tests/integration/*.test.ts",
@@ -28,8 +30,8 @@
     "prebuild": "pnpm clean",
     "prepublishOnly": "pnpm test && pnpm build",
     "publish": "npm publish --access public",
-    "codegen": "graphql-codegen --config src/codegen/codegen.ts",
-    "dev": "pnpm build --watch"
+    "dev": "pnpm build --watch",
+    "codegen": "graphql-codegen --config codegen.ts"
   },
   "keywords": [
     "craft",
@@ -50,14 +52,14 @@
   },
   "homepage": "https://github.com/kadeau/craft-api-client#readme",
   "dependencies": {
-    "@graphql-typed-document-node/core": "^3.2.0",
     "graphql": "^16.8.1",
     "graphql-request": "^6.1.0"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.0",
+    "@graphql-codegen/client-preset": "^4.1.0",
+    "@graphql-codegen/typed-document-node": "^5.0.1",
     "@graphql-codegen/typescript": "^4.0.1",
-    "@graphql-codegen/typescript-graphql-request": "^6.0.1",
     "@graphql-codegen/typescript-operations": "^4.0.1",
     "@typescript-eslint/eslint-plugin": "^8.29.0",
     "@typescript-eslint/parser": "^8.29.0",

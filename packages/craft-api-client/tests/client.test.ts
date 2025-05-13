@@ -40,10 +40,8 @@ describe('CraftClient', () => {
 
   it('should create a client with required configuration', () => {
     expect(client).toHaveProperty('query');
-    expect(client).toHaveProperty('ping');
     expect(client).toHaveProperty('config');
     expect(typeof client.query).toBe('function');
-    expect(typeof client.ping).toBe('function');
     expect(client.config).toEqual({
       apiKey: '4G6leis24EdDxmrJN7uAypEiUIDuoq7u',
       baseUrl: 'https://mercury-sign.frb.io/api'
@@ -112,33 +110,4 @@ describe('CraftClient', () => {
     )).rejects.toThrow('GraphQL Error: Test error');
   });
 
-  it.skip('should return pong when pinging the API', async () => {
-    // Use mockFetch from beforeEach and configure it for this specific case
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({ data: { ping: 'pong' } }),
-      text: () => Promise.resolve(JSON.stringify({ data: { ping: 'pong' } })),
-      headers: {
-        get: (key: string) => (key.toLowerCase() === 'content-type' ? 'application/json' : null),
-        forEach: (callback: (value: string, key: string) => void) => callback('application/json', 'content-type'),
-      },
-    });
-
-    // No need to call vi.stubGlobal('fetch', mockFetch) again here, it's done in beforeEach
-
-    const result = await client.ping();
-
-    expect(result.ping).toBe('pong');
-    expect(mockFetch).toHaveBeenCalledWith(
-      'https://mercury-sign.frb.io/api',
-      expect.objectContaining({
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer 4G6leis24EdDxmrJN7uAypEiUIDuoq7u'
-        },
-        body: expect.any(String)
-      })
-    );
-  });
 });
