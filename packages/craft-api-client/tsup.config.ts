@@ -1,7 +1,7 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts', 'src/preview.ts'],
+  entry: ['src/index.ts', 'src/preview.ts', 'src/craft-codegen.ts'],
   format: ['esm'],
   dts: true,
   sourcemap: true,

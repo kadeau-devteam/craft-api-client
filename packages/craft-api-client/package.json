@@ -9,6 +9,9 @@
     ".": "./dist/index.js",
     "./preview": "./dist/preview.js"
   },
+  "bin": {
+    "craft-codegen": "./dist/craft-codegen.js"
+  },
   "sideEffects": false,
   "engines": {
     "node": ">=20.10.0"
@@ -53,8 +56,10 @@
   "homepage": "https://github.com/kadeau/craft-api-client#readme",
   "dependencies": {
     "@graphql-typed-document-node/core": "^3.2.0",
+    "dotenv": "^16.3.1",
     "graphql": "^16.8.1",
-    "graphql-request": "^6.1.0"
+    "graphql-request": "^6.1.0",
+    "lilconfig": "^3.0.0"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^5.0.0",
@@ -69,5 +74,11 @@
     "tsup": "^8.0.2",
     "typescript": "^5.8.2",
     "vitest": "^3.1.1"
+  },
+  "peerDependencies": {
+    "graphql": "^16.8.1",
+    "@graphql-codegen/cli": "^5.0.0",
+    "@graphql-codegen/client-preset": "^4.1.0",
+    "@graphql-codegen/schema-ast": "^4.1.0"
   }
 }

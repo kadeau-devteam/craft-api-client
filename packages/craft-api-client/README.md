@@ -106,6 +106,69 @@ const result = await previewClient.query(gql`
 
 For more detailed usage instructions, see the [main README](../../README.md).
 
+## GraphQL Code Generation
+
+The package includes a CLI tool for generating GraphQL types and utilities based on your schema.
+
+### Basic Usage
+
+1. Install the necessary peer dependencies:
+
+```bash
+pnpm add -D graphql @graphql-codegen/cli @graphql-codegen/client-preset @graphql-codegen/schema-ast
+```
+
+2. Add a script to your package.json:
+
+```json
+{
+  "scripts": {
+    "codegen": "craft-codegen"
+  }
+}
+```
+
+3. Create a `craft.config.ts` file in your project root:
+
+```typescript
+export default {
+  // The URL or local file path to the GraphQL schema (mandatory)
+  schema: 'https://your-craft-site.com/api/graphql',
+
+  // API key for authentication (optional)
+  apiKey: 'your-api-key',
+
+  // Glob pattern(s) for your GraphQL documents (optional)
+  documents: [
+    'src/**/*.{ts,tsx,js,jsx,graphql,astro}',
+    'app/**/*.{ts,tsx,js,jsx,graphql,astro}',
+    '!**/node_modules/**'
+  ],
+
+  // The output directory for generated files (optional)
+  output: './src/generated/craft-api/',
+};
+```
+
+4. Run the codegen command:
+
+```bash
+pnpm codegen
+```
+
+### Configuration
+
+The `craft-codegen` script prioritizes loading configuration from `craft.config.ts` in your project root. You can also use environment variables as an alternative or override for values not found in `craft.config.ts`.
+
+#### Environment Variables
+
+- `CRAFT_GRAPHQL_SCHEMA`: The URL or local file path to the GraphQL schema
+- `CRAFT_API_KEY`: An API key to be used in the "Authorization: Bearer <apiKey>" header
+
+#### Advanced Usage
+
+If you need more control over the code generation process, you can create your own `codegen.ts` file or use the `--config` flag to specify a custom configuration file.
+
 ## Development
 
 ```bash
