@@ -6552,6 +6552,8 @@ export type DayItem_EntrySeomaticArgs = {
 
 export type DayItemsFieldEntryUnion = DayItem_Entry;
 
+export type DayItems_MatrixField = DayItem_Entry;
+
 export type Day_Entry = ElementInterface & EntryInterface & {
   __typename?: 'day_Entry';
   /** Return a number of related elements for a field. */
@@ -6580,6 +6582,7 @@ export type Day_Entry = ElementInterface & EntryInterface & {
   dateCreated?: Maybe<Scalars['DateTime']['output']>;
   /** The date the element was last updated. */
   dateUpdated?: Maybe<Scalars['DateTime']['output']>;
+  dayItems: Array<Maybe<DayItems_MatrixField>>;
   dayTitle?: Maybe<Scalars['String']['output']>;
   /** The entry’s descendants, if the section is a structure. Accepts the same arguments as the `entries` query. */
   descendants: Array<EntryInterface>;
@@ -6611,7 +6614,6 @@ export type Day_Entry = ElementInterface & EntryInterface & {
   isRevision?: Maybe<Scalars['Boolean']['output']>;
   /** Returns whether this is an unpublished draft. */
   isUnpublishedDraft?: Maybe<Scalars['Boolean']['output']>;
-  items: Array<Maybe<Items_MatrixField>>;
   /** The language of the site element is associated with. */
   language?: Maybe<Scalars['String']['output']>;
   /** The element’s level within its structure */
@@ -6846,6 +6848,83 @@ export type Day_EntryChildrenArgs = {
 };
 
 
+export type Day_EntryDayItemsArgs = {
+  after?: InputMaybe<Scalars['String']['input']>;
+  ancestorDist?: InputMaybe<Scalars['Int']['input']>;
+  ancestorOf?: InputMaybe<Scalars['Int']['input']>;
+  archived?: InputMaybe<Scalars['Boolean']['input']>;
+  authorGroup?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  authorGroupId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
+  authorId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  dateCreated?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  dateUpdated?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  descendantDist?: InputMaybe<Scalars['Int']['input']>;
+  descendantOf?: InputMaybe<Scalars['Int']['input']>;
+  draftCreator?: InputMaybe<Scalars['Int']['input']>;
+  draftId?: InputMaybe<Scalars['Int']['input']>;
+  draftOf?: InputMaybe<Scalars['QueryArgument']['input']>;
+  drafts?: InputMaybe<Scalars['Boolean']['input']>;
+  editable?: InputMaybe<Scalars['Boolean']['input']>;
+  expiryDate?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  field?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  fieldId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
+  fixedOrder?: InputMaybe<Scalars['Boolean']['input']>;
+  hasDescendants?: InputMaybe<Scalars['Boolean']['input']>;
+  id?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
+  inReverse?: InputMaybe<Scalars['Boolean']['input']>;
+  language?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  leaves?: InputMaybe<Scalars['Boolean']['input']>;
+  level?: InputMaybe<Scalars['Int']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  nextSiblingOf?: InputMaybe<Scalars['Int']['input']>;
+  notRelatedTo?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  ownerId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
+  positionedAfter?: InputMaybe<Scalars['Int']['input']>;
+  positionedBefore?: InputMaybe<Scalars['Int']['input']>;
+  postDate?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  preferSites?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
+  prevSiblingOf?: InputMaybe<Scalars['Int']['input']>;
+  primaryOwnerId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
+  provisionalDrafts?: InputMaybe<Scalars['Boolean']['input']>;
+  ref?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  relatedTo?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
+  relatedToAll?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
+  relatedToAssets?: InputMaybe<Array<InputMaybe<AssetRelationCriteriaInput>>>;
+  relatedToCategories?: InputMaybe<Array<InputMaybe<CategoryRelationCriteriaInput>>>;
+  relatedToEntries?: InputMaybe<Array<InputMaybe<EntryRelationCriteriaInput>>>;
+  relatedToTags?: InputMaybe<Array<InputMaybe<TagRelationCriteriaInput>>>;
+  relatedToUsers?: InputMaybe<Array<InputMaybe<UserRelationCriteriaInput>>>;
+  revisionCreator?: InputMaybe<Scalars['Int']['input']>;
+  revisionId?: InputMaybe<Scalars['Int']['input']>;
+  revisionOf?: InputMaybe<Scalars['QueryArgument']['input']>;
+  revisions?: InputMaybe<Scalars['Boolean']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  searchTermOptions?: InputMaybe<SearchTermOptions>;
+  section?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  sectionId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
+  site?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  siteId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
+  siteSettingsId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
+  slug?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  status?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  structureId?: InputMaybe<Scalars['Int']['input']>;
+  text?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
+  time?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
+  title?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  trashed?: InputMaybe<Scalars['Boolean']['input']>;
+  type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  typeId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
+  uid?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  unique?: InputMaybe<Scalars['Boolean']['input']>;
+  uri?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  withProvisionalDrafts?: InputMaybe<Scalars['Boolean']['input']>;
+  withStructure?: InputMaybe<Scalars['Boolean']['input']>;
+};
+
+
 export type Day_EntryDescendantsArgs = {
   after?: InputMaybe<Scalars['String']['input']>;
   ancestorDist?: InputMaybe<Scalars['Int']['input']>;
@@ -6984,83 +7063,6 @@ export type Day_EntryDraftsArgs = {
   slug?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   status?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   structureId?: InputMaybe<Scalars['Int']['input']>;
-  title?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  trashed?: InputMaybe<Scalars['Boolean']['input']>;
-  type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  typeId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
-  uid?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  unique?: InputMaybe<Scalars['Boolean']['input']>;
-  uri?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  withProvisionalDrafts?: InputMaybe<Scalars['Boolean']['input']>;
-  withStructure?: InputMaybe<Scalars['Boolean']['input']>;
-};
-
-
-export type Day_EntryItemsArgs = {
-  after?: InputMaybe<Scalars['String']['input']>;
-  ancestorDist?: InputMaybe<Scalars['Int']['input']>;
-  ancestorOf?: InputMaybe<Scalars['Int']['input']>;
-  archived?: InputMaybe<Scalars['Boolean']['input']>;
-  authorGroup?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  authorGroupId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
-  authorId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
-  before?: InputMaybe<Scalars['String']['input']>;
-  dateCreated?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  dateUpdated?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  descendantDist?: InputMaybe<Scalars['Int']['input']>;
-  descendantOf?: InputMaybe<Scalars['Int']['input']>;
-  draftCreator?: InputMaybe<Scalars['Int']['input']>;
-  draftId?: InputMaybe<Scalars['Int']['input']>;
-  draftOf?: InputMaybe<Scalars['QueryArgument']['input']>;
-  drafts?: InputMaybe<Scalars['Boolean']['input']>;
-  editable?: InputMaybe<Scalars['Boolean']['input']>;
-  expiryDate?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  field?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  fieldId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
-  fixedOrder?: InputMaybe<Scalars['Boolean']['input']>;
-  hasDescendants?: InputMaybe<Scalars['Boolean']['input']>;
-  id?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
-  inReverse?: InputMaybe<Scalars['Boolean']['input']>;
-  language?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  leaves?: InputMaybe<Scalars['Boolean']['input']>;
-  level?: InputMaybe<Scalars['Int']['input']>;
-  limit?: InputMaybe<Scalars['Int']['input']>;
-  nextSiblingOf?: InputMaybe<Scalars['Int']['input']>;
-  notRelatedTo?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
-  offset?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Scalars['String']['input']>;
-  ownerId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
-  positionedAfter?: InputMaybe<Scalars['Int']['input']>;
-  positionedBefore?: InputMaybe<Scalars['Int']['input']>;
-  postDate?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  preferSites?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
-  prevSiblingOf?: InputMaybe<Scalars['Int']['input']>;
-  primaryOwnerId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
-  provisionalDrafts?: InputMaybe<Scalars['Boolean']['input']>;
-  ref?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  relatedTo?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
-  relatedToAll?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
-  relatedToAssets?: InputMaybe<Array<InputMaybe<AssetRelationCriteriaInput>>>;
-  relatedToCategories?: InputMaybe<Array<InputMaybe<CategoryRelationCriteriaInput>>>;
-  relatedToEntries?: InputMaybe<Array<InputMaybe<EntryRelationCriteriaInput>>>;
-  relatedToTags?: InputMaybe<Array<InputMaybe<TagRelationCriteriaInput>>>;
-  relatedToUsers?: InputMaybe<Array<InputMaybe<UserRelationCriteriaInput>>>;
-  revisionCreator?: InputMaybe<Scalars['Int']['input']>;
-  revisionId?: InputMaybe<Scalars['Int']['input']>;
-  revisionOf?: InputMaybe<Scalars['QueryArgument']['input']>;
-  revisions?: InputMaybe<Scalars['Boolean']['input']>;
-  search?: InputMaybe<Scalars['String']['input']>;
-  searchTermOptions?: InputMaybe<SearchTermOptions>;
-  section?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  sectionId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
-  site?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  siteId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
-  siteSettingsId?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
-  slug?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  status?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
-  structureId?: InputMaybe<Scalars['Int']['input']>;
-  text?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
-  time?: InputMaybe<Array<InputMaybe<Scalars['QueryArgument']['input']>>>;
   title?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
   trashed?: InputMaybe<Scalars['Boolean']['input']>;
   type?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;

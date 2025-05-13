@@ -34,6 +34,47 @@ const result = await client.query(gql`
 `);
 ```
 
+### Importing GraphQL Files
+
+The package includes TypeScript declarations for importing `.graphql` files directly:
+
+```typescript
+// Import a GraphQL query from a file
+import myQueryDocument from './queries/myQuery.graphql';
+
+// Use it with the client
+const result = await client.query(myQueryDocument);
+```
+
+To use this feature in your project, you need to:
+
+1. Make sure your TypeScript configuration includes the declaration file:
+
+```json
+// tsconfig.json
+{
+  "include": [
+    // ... other includes
+    "node_modules/craft-api-client/dist/**/*.d.ts",
+    // Or create your own declaration file in your project:
+    "src/graphql.d.ts"
+  ]
+}
+```
+
+2. If you create your own declaration file, it should contain:
+
+```typescript
+// src/graphql.d.ts
+declare module '*.graphql' {
+  import { DocumentNode } from 'graphql';
+  const content: DocumentNode;
+  export default content;
+}
+```
+
+This allows TypeScript to recognize imports of `.graphql` files as `DocumentNode` objects.
+
 ### Preview Mode
 
 The package includes a dedicated module for working with preview mode:
