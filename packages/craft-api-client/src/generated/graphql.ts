@@ -30,7 +30,7 @@ export type Entry = {
   contentBuilder?: Maybe<Array<ContentBuilderBlock>>;
   id: Scalars['ID']['output'];
   postDate: Scalars['String']['output'];
-  section: Section;
+  sectionId: Scalars['String']['output'];
   slug: Scalars['String']['output'];
   status?: Maybe<Scalars['String']['output']>;
   title: Scalars['String']['output'];
@@ -173,7 +173,7 @@ export type Entry = {
   contentBuilder?: Maybe<Array<ContentBuilderBlock>>;
   id: Scalars['ID']['output'];
   postDate: Scalars['String']['output'];
-  section: Section;
+  sectionId: Scalars['String']['output'];
   slug: Scalars['String']['output'];
   status?: Maybe<Scalars['String']['output']>;
   title: Scalars['String']['output'];
