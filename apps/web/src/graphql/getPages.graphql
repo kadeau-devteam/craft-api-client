@@ -1,0 +1,22 @@
+query getPagesQuery {
+  pagesEntries {
+    ... on page_Entry {
+      id
+      title
+      contentBuilder {
+        ... on cta_Entry {
+          id
+          title
+        }
+        ... on highlightTextSection_Entry {
+          id
+          title
+        }
+        ... on articlesSection_Entry {
+          id
+          title
+        }
+      }
+    }
+  }
+}

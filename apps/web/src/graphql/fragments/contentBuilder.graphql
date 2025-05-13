@@ -1,0 +1,31 @@
+#import "./image.graphql"
+
+fragment CTAEntry on cta_Entry {
+  uid
+  typeHandle
+  image {
+    ...CTAImageDetails
+  }
+  title
+  text
+  ctaLink {
+    url
+    label
+  }
+}
+
+fragment ArticlesSectionEntry on articlesSection_Entry {
+  uid
+  typeHandle
+  tagline
+  title
+  text
+  articlesType
+}
+
+fragment HighlightTextSectionEntry on highlightTextSection_Entry {
+  uid
+  typeHandle
+  tagline
+  title
+}

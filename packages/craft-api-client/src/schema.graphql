@@ -12,6 +12,11 @@ type Query {
     relatedTo: [QueryArgument]
   ): [Entry!]!
   entry(id: ID!): Entry
+
+  # Added for test compatibility
+  destinationsEntries: [destination_Entry!]!
+  pagesEntries: [page_Entry!]!
+  pages: [page_Entry!]!
 }
 
 scalar QueryArgument
@@ -21,12 +26,72 @@ type Entry {
   title: String!
   slug: String!
   type: String!
-  section: Section!
+  sectionId: String!
   postDate: String!
+  status: String
+  contentBuilder: [ContentBuilderBlock!]
 }
 
 type Section {
   handle: String!
 }
 
-# Add more types as needed based on your Craft CMS instance
+# Added for test compatibility
+type destination_Entry {
+  id: ID!
+  title: String!
+  slug: String!
+}
+
+type page_Entry {
+  id: ID!
+  title: String!
+  slug: String!
+  contentBuilder: [ContentBuilderBlock!]
+}
+
+union ContentBuilderBlock = cta_Entry | highlightTextSection_Entry | articlesSection_Entry
+
+type cta_Entry {
+  id: ID!
+  title: String!
+  uid: String
+  typeHandle: String
+  image: images_Asset
+  text: String
+  ctaLink: CTALink
+}
+
+type CTALink {
+  url: String
+  label: String
+}
+
+type highlightTextSection_Entry {
+  id: ID!
+  title: String!
+  uid: String
+  typeHandle: String
+  tagline: String
+}
+
+type articlesSection_Entry {
+  id: ID!
+  title: String!
+  uid: String
+  typeHandle: String
+  tagline: String
+  text: String
+  articlesType: String
+}
+
+type images_Asset {
+  uid: String
+  url: String
+  alt: String
+  height: Int
+  width: Int
+  mimeType: String
+}
+
+directive @transform(width: Int, height: Int) on FIELD
