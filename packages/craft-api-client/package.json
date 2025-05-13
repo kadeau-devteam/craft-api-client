@@ -1,6 +1,6 @@
 {
   "name": "craft-api-client",
-  "version": "0.0.20",
+  "version": "0.0.23",
   "description": "A TypeScript client library for interacting with the Craft CMS API",
   "type": "module",
   "main": "dist/index.js",
@@ -59,12 +59,12 @@
     "dotenv": "^16.3.1",
     "graphql": "^16.8.1",
     "graphql-request": "^6.1.0",
-    "lilconfig": "^3.0.0"
-  },
-  "devDependencies": {
+    "lilconfig": "^3.0.0",
     "@graphql-codegen/cli": "^5.0.0",
     "@graphql-codegen/client-preset": "^4.1.0",
-    "@graphql-codegen/schema-ast": "^4.1.0",
+    "@graphql-codegen/schema-ast": "^4.1.0"
+  },
+  "devDependencies": {
     "@graphql-codegen/typed-document-node": "^5.0.1",
     "@graphql-codegen/typescript": "^4.0.1",
     "@graphql-codegen/typescript-operations": "^4.0.1",
@@ -76,9 +76,5 @@
     "vitest": "^3.1.1"
   },
   "peerDependencies": {
-    "graphql": "^16.8.1",
-    "@graphql-codegen/cli": "^5.0.0",
-    "@graphql-codegen/client-preset": "^4.1.0",
-    "@graphql-codegen/schema-ast": "^4.1.0"
   }
 }

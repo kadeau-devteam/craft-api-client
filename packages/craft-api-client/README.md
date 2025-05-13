@@ -112,13 +112,7 @@ The package includes a CLI tool for generating GraphQL types and utilities based
 
 ### Basic Usage
 
-1. Install the necessary peer dependencies:
-
-```bash
-pnpm add -D graphql @graphql-codegen/cli @graphql-codegen/client-preset @graphql-codegen/schema-ast
-```
-
-2. Add a script to your package.json:
+1. Add a script to your package.json:
 
 ```json
 {
@@ -131,11 +125,13 @@ pnpm add -D graphql @graphql-codegen/cli @graphql-codegen/client-preset @graphql
 3. Create a `craft.config.ts` file in your project root:
 
 ```typescript
-export default {
-  // The URL or local file path to the GraphQL schema (mandatory)
+import { defineCraftConfig } from 'craft-api-client/dist/craft-codegen';
+
+export default defineCraftConfig({
+  // The URL or local file path to the GraphQL schema (required)
   schema: 'https://your-craft-site.com/api/graphql',
 
-  // API key for authentication (optional)
+  // API key for authentication (required)
   apiKey: 'your-api-key',
 
   // Glob pattern(s) for your GraphQL documents (optional)
@@ -147,7 +143,7 @@ export default {
 
   // The output directory for generated files (optional)
   output: './src/generated/craft-api/',
-};
+});
 ```
 
 4. Run the codegen command:

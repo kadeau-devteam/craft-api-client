@@ -1,12 +1,41 @@
 #!/usr/bin/env node
 
-import { resolve, join } from 'path';
-import { existsSync, readFileSync, mkdirSync } from 'fs';
-import { execSync } from 'child_process';
-import { lilconfig } from 'lilconfig';
+import {join, resolve} from 'path';
+import {existsSync, mkdirSync} from 'fs';
+import {execSync} from 'child_process';
+import {lilconfig} from 'lilconfig';
 import dotenv from 'dotenv';
-import { generate } from '@graphql-codegen/cli';
-import type { CodegenConfig } from '@graphql-codegen/cli';
+import type {CodegenConfig} from '@graphql-codegen/cli';
+import {generate} from '@graphql-codegen/cli';
+
+// Configuration type
+export interface CraftCodegenConfig {
+  // Required fields
+  schema: string;
+  apiKey: string;
+
+  // Optional fields
+  documents?: string | string[];
+  output?: string;
+}
+
+/**
+ * Define a configuration for Craft API Client codegen
+ * @param config The configuration object
+ * @returns The validated configuration object
+ */
+export function defineCraftConfig(config: CraftCodegenConfig): CraftCodegenConfig {
+  // Validate required fields
+  if (!config.schema) {
+    throw new Error('schema is required in craft.config.ts');
+  }
+
+  if (!config.apiKey) {
+    throw new Error('apiKey is required in craft.config.ts');
+  }
+
+  return config;
+}
 
 // Default export for testing
 export default main;
@@ -46,9 +75,22 @@ function checkForOverrideConfig() {
 async function loadCraftConfig() {
   const explorer = lilconfig('craft', {
     searchPlaces: ['craft.config.ts', 'craft.config.js', 'craft-api-client.config.ts', 'craft-api-client.config.js'],
+    loaders: {
+      '.ts': (filepath) => {
+        // Dynamically import TypeScript files
+        try {
+          // For ESM projects, we need to use dynamic import
+          return import(filepath).then(module => module.default || module);
+        } catch (error) {
+          console.error(`Error loading TypeScript config file: ${filepath}`, error);
+          return {};
+        }
+      }
+    }
   });
 
   const result = await explorer.search();
+  // Return the config, which could be a raw object or the result of defineCraftConfig
   return result?.config || {};
 }
 
@@ -87,6 +129,11 @@ async function main() {
   // Validate required configuration
   if (!schema) {
     console.error('Error: schema is required in craft.config.ts or as CRAFT_GRAPHQL_SCHEMA environment variable');
+    process.exit(1);
+  }
+
+  if (!apiKey) {
+    console.error('Error: apiKey is required in craft.config.ts or as CRAFT_API_KEY environment variable');
     process.exit(1);
   }
 

@@ -1,12 +1,10 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { existsSync, mkdirSync, writeFileSync, unlinkSync, rmdirSync } from 'fs';
+import { existsSync } from 'fs';
 import { join, resolve } from 'path';
 import { execSync } from 'child_process';
 
 // Import modules to mock
 import * as fs from 'fs';
-import * as path from 'path';
-import * as childProcess from 'child_process';
 import * as graphqlCodegen from '@graphql-codegen/cli';
 import * as lilconfigModule from 'lilconfig';
 
@@ -60,12 +58,14 @@ describe('craft-codegen', () => {
     vi.mocked(fs.readFileSync).mockImplementation((path: any) => {
       if (path === craftConfigPath) {
         return `
-          export default {
+          import { defineCraftConfig } from '../src/craft-codegen';
+
+          export default defineCraftConfig({
             schema: 'https://example.com/graphql',
             apiKey: 'test-api-key',
             documents: ['src/**/*.graphql'],
             output: './src/generated/'
-          };
+          });
         `;
       }
       if (path === envFilePath) {
@@ -131,6 +131,8 @@ describe('craft-codegen', () => {
 
   it('should fall back to environment variables when config values are missing', async () => {
     // Mock readFileSync for craft.config.ts with missing values
+    // Note: We're using the old pattern (simple object export) for testing fallback behavior
+    // since defineCraftConfig would throw an error if schema or apiKey are missing
     vi.mocked(fs.readFileSync).mockImplementation((path: any) => {
       if (path === craftConfigPath) {
         return `
@@ -193,14 +195,15 @@ describe('craft-codegen', () => {
     delete process.env.CRAFT_GRAPHQL_SCHEMA;
   });
 
-  it('should use default values when config values and env vars are missing', async () => {
-    // Mock readFileSync for craft.config.ts with only schema
+  it('should use default values when config values are missing but required ones are provided', async () => {
+    // Mock readFileSync for craft.config.ts with only required fields
     vi.mocked(fs.readFileSync).mockImplementation((path: any) => {
       if (path === craftConfigPath) {
         return `
           export default {
             schema: 'https://example.com/graphql',
-            // No apiKey, documents, or output
+            apiKey: 'test-api-key',
+            // No documents or output
           };
         `;
       }
@@ -214,13 +217,14 @@ describe('craft-codegen', () => {
       return false; // Other files don't exist
     });
 
-    // Mock lilconfig to return config with only schema
+    // Mock lilconfig to return config with only required fields
     vi.mocked(lilconfigModule.lilconfig).mockImplementation(() => {
       return {
         search: vi.fn().mockResolvedValue({
           config: {
             schema: 'https://example.com/graphql',
-            // No apiKey, documents, or output
+            apiKey: 'test-api-key',
+            // No documents or output
           }
         })
       };
@@ -311,6 +315,67 @@ describe('craft-codegen', () => {
     mockConsoleError.mockRestore();
   });
 
+  it('should throw an error when apiKey is not provided', async () => {
+    // Mock readFileSync for craft.config.ts with no apiKey
+    vi.mocked(fs.readFileSync).mockImplementation((path: any) => {
+      if (path === craftConfigPath) {
+        return `
+          export default {
+            schema: 'https://example.com/graphql',
+            // No apiKey
+            documents: ['src/**/*.graphql'],
+            output: './src/generated/'
+          };
+        `;
+      }
+      // No .env file
+      return '';
+    });
+
+    // Mock existsSync to return false for .env
+    vi.mocked(existsSync).mockImplementation((path) => {
+      if (path === craftConfigPath) return true; // craft.config.ts exists
+      return false; // Other files don't exist
+    });
+
+    // Mock lilconfig to return config without apiKey
+    vi.mocked(lilconfigModule.lilconfig).mockImplementation(() => {
+      return {
+        search: vi.fn().mockResolvedValue({
+          config: {
+            schema: 'https://example.com/graphql',
+            // No apiKey
+            documents: ['src/**/*.graphql'],
+            output: './src/generated/'
+          }
+        })
+      };
+    });
+
+    // Mock process.exit
+    const mockExit = vi.spyOn(process, 'exit').mockImplementation((code) => {
+      throw new Error(`Process exited with code ${code}`);
+    });
+
+    // Mock console.error
+    const mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    // Import the module dynamically to ensure mocks are applied
+    const craftCodegenModule = await import('../src/craft-codegen');
+
+    // Call the main function and expect it to throw
+    await expect(craftCodegenModule.default()).rejects.toThrow('Process exited with code 1');
+
+    // Check that console.error was called with the correct message
+    expect(mockConsoleError).toHaveBeenCalledWith(
+      expect.stringContaining('apiKey is required')
+    );
+
+    // Restore mocks
+    mockExit.mockRestore();
+    mockConsoleError.mockRestore();
+  });
+
   it('should use override config when provided', async () => {
     // Mock process.argv to include --config flag
     vi.spyOn(process, 'argv', 'get').mockReturnValue([
@@ -319,8 +384,8 @@ describe('craft-codegen', () => {
 
     // Mock existsSync to return true for custom config
     vi.mocked(existsSync).mockImplementation((path) => {
-      if (path.includes('custom-codegen.ts')) return true;
-      return false;
+      return !!path.includes('custom-codegen.ts');
+
     });
 
     // Import the module dynamically to ensure mocks are applied
