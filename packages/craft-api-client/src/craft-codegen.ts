@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import { resolve, join } from 'path';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, mkdirSync } from 'fs';
+import { execSync } from 'child_process';
 import { lilconfig } from 'lilconfig';
 import dotenv from 'dotenv';
 import { generate } from '@graphql-codegen/cli';
@@ -61,7 +62,6 @@ async function main() {
   if (overrideConfigPath) {
     console.log(`Using override config from ${overrideConfigPath}`);
     // Pass all arguments to graphql-codegen
-    const { execSync } = require('child_process');
     const args = process.argv.slice(2).join(' ');
     try {
       execSync(`npx graphql-codegen ${args}`, { stdio: 'inherit' });
@@ -97,8 +97,8 @@ async function main() {
   }
 
   // Create output directory if it doesn't exist
-  const { mkdirSync } = require('fs');
   try {
+    // Use the already imported fs module
     mkdirSync(resolve(process.cwd(), output), { recursive: true });
   } catch (error) {
     // Ignore if directory already exists
