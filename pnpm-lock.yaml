@@ -45,6 +45,9 @@ importers:
       '@graphql-codegen/client-preset':
         specifier: ^4.1.0
         version: 4.8.1(graphql@16.11.0)
+      '@graphql-codegen/schema-ast':
+        specifier: ^4.1.0
+        version: 4.1.0(graphql@16.11.0)
       '@graphql-codegen/typed-document-node':
         specifier: ^5.0.1
         version: 5.1.1(graphql@16.11.0)

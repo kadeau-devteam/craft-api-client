@@ -1,21 +1,17 @@
+#import "./fragments/contentBuilderBlocks.graphql"
+
 query getPagesQuery {
   pagesEntries {
-    ... on page_Entry {
-      id
-      title
+    ...on page_Entry {
+      uid
+      typeHandle
       contentBuilder {
-        ... on cta_Entry {
-          id
-          title
-        }
-        ... on highlightTextSection_Entry {
-          id
-          title
-        }
-        ... on articlesSection_Entry {
-          id
-          title
-        }
+        __typename
+        ...CTAEntry
+        ...ArticlesSectionEntry
+        ...HighlightTextSectionEntry
+        ...ImageWithTextEntry
+        ...StepsSectionEntry
       }
     }
   }
