@@ -10,3 +10,4 @@ coverage/
 
 # Generated files
 src/generated/
+/.turbo/
