@@ -137,24 +137,43 @@ Example `codegen.ts`:
 
 ```typescript
 import type { CodegenConfig } from '@graphql-codegen/cli';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config({ path: process.cwd() + '/.env.local' });
+
+const apiToken = process.env.CRAFT_API_KEY || '4G6leis24EdDxmrJN7uAypEiUIDuoq7u';
+const schemaUrl = process.env.CRAFT_GRAPHQL_SCHEMA || 'https://mercury-sign.frb.io/actions/graphql/api';
 
 const config: CodegenConfig = {
-  schema: {
-    [process.env.CRAFT_GRAPHQL_SCHEMA || '']: {
-      headers: {
-        Authorization: `Bearer ${process.env.CRAFT_API_KEY || ''}`,
-      },
-    },
-  },
-  documents: './src/graphql/**/*.graphql',
   generates: {
+    // Step 1: Generate a local schema file from the remote endpoint
+    './src/generated/graphql/schema.graphql': {
+      schema: {
+        [schemaUrl]: {
+          headers: {
+            "Authorization": `Bearer ${apiToken}`
+          }
+        }
+      },
+      plugins: ['schema-ast'],
+    },
+    // Step 2: Generate TypeScript types using the remote schema directly
     './src/generated/graphql/': {
+      schema: {
+        [schemaUrl]: {
+          headers: {
+            "Authorization": `Bearer ${apiToken}`
+          }
+        }
+      },
+      documents: './src/graphql/**/*.graphql',
       preset: 'client',
-      plugins: [
-        'typescript',
-        'typescript-operations',
-        'typed-document-node',
-      ],
+      config: {
+        skipTypename: false,
+        dedupeFragments: true,
+        exportFragmentSpreadSubTypes: true,
+      },
     },
   },
 };
@@ -172,6 +191,46 @@ Add to your `package.json`:
   }
 }
 ```
+
+#### Setting Up Codegen in Next.js Apps
+
+For Next.js applications, follow these steps. Note that all necessary dependencies (graphql, codegen, dotenv, etc.) are already included with the craft-api-client package, so you don't need to install them separately.
+
+1. Create a directory for your codegen configuration:
+   ```bash
+   mkdir -p src/codegen
+   ```
+
+2. Copy the template file to your project:
+   ```bash
+   cp node_modules/craft-api-client/templates/codegen.config.stub.ts src/codegen/codegen.ts
+   ```
+
+3. Create a `.env.local` file in your project root with your Craft CMS API credentials:
+   ```
+   CRAFT_API_KEY=your-craft-api-key
+   CRAFT_GRAPHQL_SCHEMA=https://your-craft-cms-url/actions/graphql/api
+   ```
+
+5. Add the codegen script to your `package.json`:
+   ```json
+   {
+     "scripts": {
+       "codegen": "graphql-codegen -c src/codegen/codegen.ts",
+       "prebuild": "npm run codegen"
+     }
+   }
+   ```
+
+6. Run the codegen command to generate your GraphQL types:
+   ```bash
+   npm run codegen
+   ```
+
+This setup will:
+1. Generate a local schema file from your Craft CMS GraphQL API
+2. Generate TypeScript types for your GraphQL operations
+3. Make these types available for use in your Next.js application
 
 ### web (Next.js App)
 
@@ -235,11 +294,7 @@ const nextConfig = {
 module.exports = nextConfig;
 ```
 
-You'll also need to install the graphql-tag loader:
-
-```bash
-pnpm add -D graphql-tag
-```
+The graphql-tag loader is included with the craft-api-client package, so you don't need to install it separately.
 
 #### Using Turbopack
 
@@ -268,11 +323,7 @@ const nextConfig = {
 module.exports = nextConfig;
 ```
 
-You'll still need to install the graphql-tag loader:
-
-```bash
-pnpm add -D graphql-tag
-```
+The graphql-tag loader is included with the craft-api-client package, so you don't need to install it separately.
 
 ## Usage
 
