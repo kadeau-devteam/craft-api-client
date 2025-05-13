@@ -12,6 +12,11 @@ type Query {
     relatedTo: [QueryArgument]
   ): [Entry!]!
   entry(id: ID!): Entry
+
+  # Added for test compatibility
+  destinationsEntries: [destination_Entry!]!
+  pagesEntries: [page_Entry!]!
+  pages: [page_Entry!]!
 }
 
 scalar QueryArgument
@@ -24,6 +29,7 @@ type Entry {
   sectionId: String!
   postDate: String!
   status: String
+  contentBuilder: [ContentBuilderBlock!]
 }
 
 type Section {
@@ -35,6 +41,48 @@ type destination_Entry {
   id: ID!
   title: String!
   slug: String!
+}
+
+type page_Entry {
+  id: ID!
+  title: String!
+  slug: String!
+  contentBuilder: [ContentBuilderBlock!]
+}
+
+union ContentBuilderBlock = cta_Entry | highlightTextSection_Entry | articlesSection_Entry
+
+type cta_Entry {
+  id: ID!
+  title: String!
+  uid: String
+  typeHandle: String
+  image: images_Asset
+  text: String
+  ctaLink: CTALink
+}
+
+type CTALink {
+  url: String
+  label: String
+}
+
+type highlightTextSection_Entry {
+  id: ID!
+  title: String!
+  uid: String
+  typeHandle: String
+  tagline: String
+}
+
+type articlesSection_Entry {
+  id: ID!
+  title: String!
+  uid: String
+  typeHandle: String
+  tagline: String
+  text: String
+  articlesType: String
 }
 
 type images_Asset {

@@ -14,16 +14,10 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Learn more about it here: https://the-guild.dev/graphql/codegen/plugins/presets/preset-client#reducing-bundle-size
  */
 type Documents = {
-    "query Destinations {\n  destinationsEntries {\n    ... on destination_Entry {\n      id\n      title\n      slug\n    }\n  }\n}": typeof types.DestinationsDocument,
-    "fragment CTAEntry on cta_Entry {\n  uid\n  typeHandle\n  image {\n    ...CTAImageDetails\n  }\n  title\n  text\n  ctaLink {\n    url\n    label\n  }\n}\n\nfragment ArticlesSectionEntry on articlesSection_Entry {\n  uid\n  typeHandle\n  tagline\n  title\n  text\n  articlesType\n}\n\nfragment HighlightTextSectionEntry on highlightTextSection_Entry {\n  uid\n  typeHandle\n  tagline\n  title\n}": typeof types.CtaEntryFragmentDoc,
-    "fragment CTAImageDetails on images_Asset {\n  uid\n  src: url @transform(width: 3840, height: 2438)\n  alt\n  height\n  width\n  mimetype: mimeType\n}": typeof types.CtaImageDetailsFragmentDoc,
-    "query getPagesQuery {\n  pagesEntries {\n    ... on page_Entry {\n      id\n      title\n      contentBuilder {\n        ... on cta_Entry {\n          id\n          title\n        }\n        ... on highlightTextSection_Entry {\n          id\n          title\n        }\n        ... on articlesSection_Entry {\n          id\n          title\n        }\n      }\n    }\n  }\n}": typeof types.GetPagesQueryDocument,
+    "query ping {\n  ping\n}": typeof types.PingDocument,
 };
 const documents: Documents = {
-    "query Destinations {\n  destinationsEntries {\n    ... on destination_Entry {\n      id\n      title\n      slug\n    }\n  }\n}": types.DestinationsDocument,
-    "fragment CTAEntry on cta_Entry {\n  uid\n  typeHandle\n  image {\n    ...CTAImageDetails\n  }\n  title\n  text\n  ctaLink {\n    url\n    label\n  }\n}\n\nfragment ArticlesSectionEntry on articlesSection_Entry {\n  uid\n  typeHandle\n  tagline\n  title\n  text\n  articlesType\n}\n\nfragment HighlightTextSectionEntry on highlightTextSection_Entry {\n  uid\n  typeHandle\n  tagline\n  title\n}": types.CtaEntryFragmentDoc,
-    "fragment CTAImageDetails on images_Asset {\n  uid\n  src: url @transform(width: 3840, height: 2438)\n  alt\n  height\n  width\n  mimetype: mimeType\n}": types.CtaImageDetailsFragmentDoc,
-    "query getPagesQuery {\n  pagesEntries {\n    ... on page_Entry {\n      id\n      title\n      contentBuilder {\n        ... on cta_Entry {\n          id\n          title\n        }\n        ... on highlightTextSection_Entry {\n          id\n          title\n        }\n        ... on articlesSection_Entry {\n          id\n          title\n        }\n      }\n    }\n  }\n}": types.GetPagesQueryDocument,
+    "query ping {\n  ping\n}": types.PingDocument,
 };
 
 /**
@@ -43,19 +37,7 @@ export function graphql(source: string): unknown;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "query Destinations {\n  destinationsEntries {\n    ... on destination_Entry {\n      id\n      title\n      slug\n    }\n  }\n}"): (typeof documents)["query Destinations {\n  destinationsEntries {\n    ... on destination_Entry {\n      id\n      title\n      slug\n    }\n  }\n}"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "fragment CTAEntry on cta_Entry {\n  uid\n  typeHandle\n  image {\n    ...CTAImageDetails\n  }\n  title\n  text\n  ctaLink {\n    url\n    label\n  }\n}\n\nfragment ArticlesSectionEntry on articlesSection_Entry {\n  uid\n  typeHandle\n  tagline\n  title\n  text\n  articlesType\n}\n\nfragment HighlightTextSectionEntry on highlightTextSection_Entry {\n  uid\n  typeHandle\n  tagline\n  title\n}"): (typeof documents)["fragment CTAEntry on cta_Entry {\n  uid\n  typeHandle\n  image {\n    ...CTAImageDetails\n  }\n  title\n  text\n  ctaLink {\n    url\n    label\n  }\n}\n\nfragment ArticlesSectionEntry on articlesSection_Entry {\n  uid\n  typeHandle\n  tagline\n  title\n  text\n  articlesType\n}\n\nfragment HighlightTextSectionEntry on highlightTextSection_Entry {\n  uid\n  typeHandle\n  tagline\n  title\n}"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "fragment CTAImageDetails on images_Asset {\n  uid\n  src: url @transform(width: 3840, height: 2438)\n  alt\n  height\n  width\n  mimetype: mimeType\n}"): (typeof documents)["fragment CTAImageDetails on images_Asset {\n  uid\n  src: url @transform(width: 3840, height: 2438)\n  alt\n  height\n  width\n  mimetype: mimeType\n}"];
-/**
- * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
- */
-export function graphql(source: "query getPagesQuery {\n  pagesEntries {\n    ... on page_Entry {\n      id\n      title\n      contentBuilder {\n        ... on cta_Entry {\n          id\n          title\n        }\n        ... on highlightTextSection_Entry {\n          id\n          title\n        }\n        ... on articlesSection_Entry {\n          id\n          title\n        }\n      }\n    }\n  }\n}"): (typeof documents)["query getPagesQuery {\n  pagesEntries {\n    ... on page_Entry {\n      id\n      title\n      contentBuilder {\n        ... on cta_Entry {\n          id\n          title\n        }\n        ... on highlightTextSection_Entry {\n          id\n          title\n        }\n        ... on articlesSection_Entry {\n          id\n          title\n        }\n      }\n    }\n  }\n}"];
+export function graphql(source: "query ping {\n  ping\n}"): (typeof documents)["query ping {\n  ping\n}"];
 
 export function graphql(source: string) {
   return (documents as any)[source] ?? {};
