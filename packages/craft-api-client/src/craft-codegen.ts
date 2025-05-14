@@ -24,7 +24,7 @@ export interface CraftCodegenConfig {
  * @param config The configuration object
  * @returns The validated configuration object
  */
-export function defineCraftConfig(config: CraftCodegenConfig): CraftCodegenConfig {
+export function defineConfig(config: CraftCodegenConfig): CraftCodegenConfig {
   // Validate required fields
   if (!config.schema) {
     throw new Error('schema is required in craft.config.ts');
@@ -36,6 +36,7 @@ export function defineCraftConfig(config: CraftCodegenConfig): CraftCodegenConfi
 
   return config;
 }
+
 
 // Default export for testing
 export default main;
@@ -74,7 +75,7 @@ function checkForOverrideConfig() {
 // Load configuration from craft.config.ts
 async function loadCraftConfig() {
   const explorer = lilconfig('craft', {
-    searchPlaces: ['craft.config.ts', 'craft.config.js', 'craft-api-client.config.ts', 'craft-api-client.config.js'],
+    searchPlaces: ['craft.config.ts', 'craft.config.js'],
     loaders: {
       '.ts': (filepath) => {
         // Dynamically import TypeScript files
@@ -90,7 +91,7 @@ async function loadCraftConfig() {
   });
 
   const result = await explorer.search();
-  // Return the config, which could be a raw object or the result of defineCraftConfig
+  // Return the config, which could be a raw object or the result of defineConfig
   return result?.config || {};
 }
 

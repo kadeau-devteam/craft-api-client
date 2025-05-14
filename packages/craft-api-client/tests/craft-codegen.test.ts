@@ -58,9 +58,9 @@ describe('craft-codegen', () => {
     vi.mocked(fs.readFileSync).mockImplementation((path: any) => {
       if (path === craftConfigPath) {
         return `
-          import { defineCraftConfig } from '../src/craft-codegen';
+          import { defineConfig } from '../src/craft-codegen';
 
-          export default defineCraftConfig({
+          export default defineConfig({
             schema: 'https://example.com/graphql',
             apiKey: 'test-api-key',
             documents: ['src/**/*.graphql'],
@@ -132,7 +132,7 @@ describe('craft-codegen', () => {
   it('should fall back to environment variables when config values are missing', async () => {
     // Mock readFileSync for craft.config.ts with missing values
     // Note: We're using the old pattern (simple object export) for testing fallback behavior
-    // since defineCraftConfig would throw an error if schema or apiKey are missing
+    // since defineConfig would throw an error if schema or apiKey are missing
     vi.mocked(fs.readFileSync).mockImplementation((path: any) => {
       if (path === craftConfigPath) {
         return `

@@ -2,12 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Breaking Changes
+- Removed backward compatibility alias `defineCraftConfig`
+- Users must now use `defineConfig` instead of `defineCraftConfig`
+
+### Changed
+- Renamed `defineCraftConfig` function to `defineConfig` for a more concise API
+- Updated documentation to reflect the new function name
+
 ## [0.0.23] - 2023-11-17
 
 ### Added
-- Added `defineCraftConfig` function for type-safe configuration in craft.config.ts files
+- Added `defineConfig` function (previously named `defineCraftConfig`) for type-safe configuration in craft.config.ts files
 - Made `schema` and `apiKey` required configuration values
-- Updated documentation to show the new usage pattern with defineCraftConfig
+- Updated documentation to show the new usage pattern with defineConfig
 
 ## [0.0.22] - 2023-11-16
 

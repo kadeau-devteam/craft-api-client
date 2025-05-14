@@ -125,9 +125,9 @@ The package includes a CLI tool for generating GraphQL types and utilities based
 3. Create a `craft.config.ts` file in your project root:
 
 ```typescript
-import { defineCraftConfig } from 'craft-api-client/dist/craft-codegen';
+import { defineConfig } from 'craft-api-client/config';
 
-export default defineCraftConfig({
+export default defineConfig({
   // The URL or local file path to the GraphQL schema (required)
   schema: 'https://your-craft-site.com/api/graphql',
 
@@ -151,6 +151,19 @@ export default defineCraftConfig({
 ```bash
 pnpm codegen
 ```
+
+### Import Paths
+
+You can import the `defineConfig` function using either of these import paths:
+
+```typescript
+// Recommended way
+import { defineConfig } from 'craft-api-client/config';
+
+// Alternative way (also supported)
+import { defineConfig } from 'craft-api-client/dist/craft-codegen';
+```
+
 
 ### Configuration
 
