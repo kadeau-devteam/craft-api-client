@@ -256,6 +256,15 @@ async function main() {
           useTypeImports: true
         }
       },
+      // Generate schema.graphql file
+      [resolve(getCwd(), output, 'schema.graphql')]: {
+        schema: {
+          [schema]: {
+            headers
+          }
+        },
+        plugins: ['schema-ast'],
+      },
     },
   };
 
