@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 
-import {join, resolve} from 'path';
-import {existsSync, mkdirSync} from 'fs';
+import {resolve} from 'path';
+import {existsSync, mkdirSync, readdirSync} from 'fs';
 import {execSync} from 'child_process';
-import {lilconfig} from 'lilconfig';
 import dotenv from 'dotenv';
 import type {CodegenConfig} from '@graphql-codegen/cli';
 import {generate} from '@graphql-codegen/cli';
@@ -74,31 +73,54 @@ function checkForOverrideConfig() {
 
 // Load configuration from craft.config.ts
 async function loadCraftConfig() {
-  const explorer = lilconfig('craft', {
-    searchPlaces: ['craft.config.ts', 'craft.config.js'],
-    loaders: {
-      '.ts': (filepath) => {
-        // Dynamically import TypeScript files
-        try {
-          // For ESM projects, we need to use dynamic import
-          return import(filepath).then(module => module.default || module);
-        } catch (error) {
-          console.error(`Error loading TypeScript config file: ${filepath}`, error);
-          return {};
-        }
-      }
-    }
-  });
+  process.stdout.write('Loading craft config...\n');
 
-  const result = await explorer.search();
-  // Return the config, which could be a raw object or the result of defineConfig
-  return result?.config || {};
+  // Check if craft.config.ts exists
+  const configPath = resolve(process.cwd(), 'craft.config.ts');
+  const configJsPath = resolve(process.cwd(), 'craft.config.js');
+
+  process.stdout.write(`Checking for config files:\n- ${configPath}\n- ${configJsPath}\n`);
+
+  if (existsSync(configPath)) {
+    process.stdout.write(`Found config file: ${configPath}\n`);
+    process.stdout.write('Using environment variables instead of trying to import TypeScript file directly.\n');
+  } else if (existsSync(configJsPath)) {
+    process.stdout.write(`Found config file: ${configJsPath}\n`);
+    process.stdout.write('Using environment variables instead of trying to import JavaScript file directly.\n');
+  } else {
+    process.stdout.write('No config file found. Using environment variables only.\n');
+  }
+
+  // Create a config object from environment variables
+  const config = {
+    schema: process.env.CRAFT_API_URL || process.env.CRAFT_GRAPHQL_SCHEMA,
+    apiKey: process.env.CRAFT_API_KEY,
+    documents: [
+      'src/**/*.{ts,tsx,js,jsx,graphql,astro}',
+      'app/**/*.{ts,tsx,js,jsx,graphql,astro}',
+      '!**/node_modules/**',
+      '!**/test/**/*.{ts,tsx,js,jsx,graphql,astro}',
+      '!**/*.test.{ts,tsx,js,jsx,graphql,astro}'
+    ],
+    output: './src/generated/craft-api/'
+  };
+
+  process.stdout.write(`Created config from environment variables: ${JSON.stringify(config, null, 2)}\n`);
+
+  return config;
 }
 
 // Main function
 async function main() {
+  // Force enable debug mode
+  process.env.DEBUG = 'true';
+
+  // Ensure console output is displayed
+  process.stdout.write('Starting craft-codegen...\n');
+
   // Load environment variables
   loadEnvVariables();
+  process.stdout.write(`Current working directory: ${process.cwd()}\n`);
 
   // Check for override config
   const overrideConfigPath = checkForOverrideConfig();
@@ -114,22 +136,30 @@ async function main() {
     return;
   }
 
-  // Load configuration from craft.config.ts
-  const craftConfig = await loadCraftConfig();
+  // Load configuration from craft.config.ts or environment variables
+  const config = await loadCraftConfig();
 
-  // Get configuration values with fallbacks
-  const schema = craftConfig.schema || process.env.CRAFT_GRAPHQL_SCHEMA;
-  const apiKey = craftConfig.apiKey || process.env.CRAFT_API_KEY;
-  const documents = craftConfig.documents || [
-    'src/**/*.{ts,tsx,js,jsx,graphql,astro}',
-    'app/**/*.{ts,tsx,js,jsx,graphql,astro}',
-    '!**/node_modules/**'
-  ];
-  const output = craftConfig.output || './src/generated/craft-api/';
+  // Log environment variables for debugging
+  process.stdout.write('Environment variables:\n');
+  process.stdout.write(`- CRAFT_API_URL: ${process.env.CRAFT_API_URL || 'not set'}\n`);
+  process.stdout.write(`- CRAFT_GRAPHQL_SCHEMA: ${process.env.CRAFT_GRAPHQL_SCHEMA || 'not set'}\n`);
+  process.stdout.write(`- CRAFT_API_KEY: ${process.env.CRAFT_API_KEY ? '***' : 'not set'}\n`);
+
+  // Use the config object directly
+  const schema = config.schema;
+  const apiKey = config.apiKey;
+  const documents = config.documents;
+  const output = config.output;
+
+  process.stdout.write('Final configuration:\n');
+  process.stdout.write(`- schema: ${schema || 'not set'}\n`);
+  process.stdout.write(`- apiKey: ${apiKey ? '***' : 'not set'}\n`);
+  process.stdout.write(`- documents: ${JSON.stringify(documents)}\n`);
+  process.stdout.write(`- output: ${output}\n`);
 
   // Validate required configuration
   if (!schema) {
-    console.error('Error: schema is required in craft.config.ts or as CRAFT_GRAPHQL_SCHEMA environment variable');
+    console.error('Error: schema is required in craft.config.ts or as CRAFT_API_URL or CRAFT_GRAPHQL_SCHEMA environment variable');
     process.exit(1);
   }
 
@@ -152,101 +182,70 @@ async function main() {
     // Ignore if directory already exists
   }
 
-  // Prepare for codegen
+  // Prepare codegen config
+  const codegenConfig: CodegenConfig = {
+    schema: {
+      [schema]: {
+        headers
+      }
+    },
+    documents,
+    generates: {
+      // Generate TypeScript types directly from the remote schema
+      [output]: {
+        preset: 'client',
+        plugins: [],
+        config: {
+          skipTypename: false,
+          dedupeFragments: true,
+          exportFragmentSpreadSubTypes: true,
+          documentMode: 'documentNodeImportFragments',
+          // Add unique suffix to operation names to avoid conflicts
+          operationResultSuffix: 'Result',
+        },
+        // Also generate schema.graphql file alongside the TypeScript types
+        presetConfig: {
+          gqlTagName: 'gql',
+          fragmentMasking: false,
+          useTypeImports: true
+        }
+      },
+    },
+  };
+
+  // Add additional options for the generate function
+  const generateOptions = {
+    skipValidation: true, // Skip validation to allow duplicate operation names
+  };
 
   // Run codegen
   try {
-    console.log('Generating GraphQL types...');
-    console.log(`Using schema URL: ${schema}`);
-    console.log(`Output directory: ${output}`);
+    process.stdout.write('Generating GraphQL types...\n');
+    process.stdout.write(`Using codegen config: ${JSON.stringify(codegenConfig, null, 2)}\n`);
+    process.stdout.write(`Using generate options: ${JSON.stringify(generateOptions, null, 2)}\n`);
+    await generate({
+      ...codegenConfig,
+      ...generateOptions
+    }, true);
+    process.stdout.write('GraphQL types generated successfully!\n');
 
-    // Step 1: Generate schema file only
-    console.log('Step 1: Generating schema file...');
-    const schemaConfig: CodegenConfig = {
-      generates: {
-        [join(output, 'schema.graphql')]: {
-          schema: {
-            [schema]: {
-              headers
-            }
-          },
-          plugins: ['schema-ast'],
-        }
-      }
-    };
-
-    await generate(schemaConfig, true);
-    console.log('Schema file generation completed.');
-
-    // Verify schema file exists and is not empty
-    const schemaPath = resolve(process.cwd(), join(output, 'schema.graphql'));
-    console.log(`Verifying schema file at: ${schemaPath}`);
-
-    if (!existsSync(schemaPath)) {
-      throw new Error(`Schema file was not generated at ${schemaPath}`);
+    // Verify the output directory was created
+    const outputPath = resolve(process.cwd(), output);
+    process.stdout.write(`Checking if output directory exists: ${outputPath}\n`);
+    if (existsSync(outputPath)) {
+      process.stdout.write(`Output directory exists. Contents: ${JSON.stringify(readdirSync(outputPath))}\n`);
+    } else {
+      process.stdout.write(`Output directory does not exist!\n`);
     }
-
-    const schemaContent = require('fs').readFileSync(schemaPath, 'utf8');
-    if (!schemaContent || schemaContent.trim() === '') {
-      throw new Error(`Generated schema file is empty at ${schemaPath}`);
-    }
-
-    console.log(`Schema file verified: ${schemaContent.length} bytes`);
-
-    // Step 2: Generate TypeScript types using the schema file
-    console.log('Step 2: Generating TypeScript types...');
-    const typesConfig: CodegenConfig = {
-      generates: {
-        [output]: {
-          schema: schemaPath,
-          documents,
-          preset: 'client',
-          plugins: [],
-          config: {
-            skipTypename: false,
-            dedupeFragments: true,
-            exportFragmentSpreadSubTypes: true,
-          },
-        }
-      }
-    };
-
-    await generate(typesConfig, true);
-    console.log('TypeScript types generation completed.');
-    console.log('GraphQL types generated successfully!');
   } catch (error) {
+    process.stdout.write(`Error generating GraphQL types: ${error}\n`);
     console.error('Error generating GraphQL types:', error);
     process.exit(1);
   }
 }
 
-// Only run main() if this file is being executed directly
-// In ESM, we can check if the current file is the entry point by comparing import.meta.url
-// against the node process argv[1] converted to URL format
-const isMainModule = async () => {
-  if (typeof process !== 'undefined') {
-    const mainModule = process.argv[1];
-    if (mainModule) {
-      try {
-        const { fileURLToPath } = await import('url');
-        const { dirname } = await import('path');
-        const modulePath = fileURLToPath(import.meta.url);
-        const moduleDir = dirname(modulePath);
-        return mainModule.startsWith(moduleDir);
-      } catch (e) {
-        return false;
-      }
-    }
-  }
-  return false;
-};
-
-// Self-invoking async function to allow top-level await
-(async () => {
-  if (await isMainModule()) {
-    main().catch(error => {
-      console.error('Unexpected error:', error);
-      process.exit(1);
-    });
-  }
-})();
+main().catch(error => {
+  process.stdout.write(`Unexpected error: ${error}\n`);
+  console.error('Unexpected error:', error);
+  process.exit(1);
+});

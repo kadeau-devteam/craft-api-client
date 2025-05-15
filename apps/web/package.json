@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "clean": "rm -rf .next",
-    "codegen": "graphql-codegen --config src/codegen/codegen.ts",
+    "codegen": "craft-codegen",
     "prebuild": "pnpm run codegen",
     "test": "vitest run",
     "test:watch": "vitest",
