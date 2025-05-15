@@ -152,37 +152,67 @@ async function main() {
     // Ignore if directory already exists
   }
 
-  // Prepare codegen config
-  const codegenConfig: CodegenConfig = {
-    generates: {
-      // Step 1: Generate a local schema file
-      [join(output, 'schema.graphql')]: {
-        schema: {
-          [schema]: {
-            headers
-          }
-        },
-        plugins: ['schema-ast'],
-      },
-      // Step 2: Generate TypeScript types
-      [output]: {
-        schema: join(output, 'schema.graphql'),
-        documents,
-        preset: 'client',
-        plugins: [],
-        config: {
-          skipTypename: false,
-          dedupeFragments: true,
-          exportFragmentSpreadSubTypes: true,
-        },
-      },
-    },
-  };
+  // Prepare for codegen
 
   // Run codegen
   try {
     console.log('Generating GraphQL types...');
-    await generate(codegenConfig, true);
+    console.log(`Using schema URL: ${schema}`);
+    console.log(`Output directory: ${output}`);
+
+    // Step 1: Generate schema file only
+    console.log('Step 1: Generating schema file...');
+    const schemaConfig: CodegenConfig = {
+      generates: {
+        [join(output, 'schema.graphql')]: {
+          schema: {
+            [schema]: {
+              headers
+            }
+          },
+          plugins: ['schema-ast'],
+        }
+      }
+    };
+
+    await generate(schemaConfig, true);
+    console.log('Schema file generation completed.');
+
+    // Verify schema file exists and is not empty
+    const schemaPath = resolve(process.cwd(), join(output, 'schema.graphql'));
+    console.log(`Verifying schema file at: ${schemaPath}`);
+
+    if (!existsSync(schemaPath)) {
+      throw new Error(`Schema file was not generated at ${schemaPath}`);
+    }
+
+    const schemaContent = require('fs').readFileSync(schemaPath, 'utf8');
+    if (!schemaContent || schemaContent.trim() === '') {
+      throw new Error(`Generated schema file is empty at ${schemaPath}`);
+    }
+
+    console.log(`Schema file verified: ${schemaContent.length} bytes`);
+
+    // Step 2: Generate TypeScript types using the schema file
+    console.log('Step 2: Generating TypeScript types...');
+    const typesConfig: CodegenConfig = {
+      generates: {
+        [output]: {
+          schema: schemaPath,
+          documents,
+          preset: 'client',
+          plugins: [],
+          config: {
+            skipTypename: false,
+            dedupeFragments: true,
+            exportFragmentSpreadSubTypes: true,
+          },
+        }
+      }
+    };
+
+    await generate(typesConfig, true);
+    console.log('TypeScript types generation completed.');
     console.log('GraphQL types generated successfully!');
   } catch (error) {
     console.error('Error generating GraphQL types:', error);
@@ -190,7 +220,10 @@ async function main() {
   }
 }
 
-main().catch(error => {
-  console.error('Unexpected error:', error);
-  process.exit(1);
-});
+// Only run main() if this file is being executed directly
+if (require.main === module) {
+  main().catch(error => {
+    console.error('Unexpected error:', error);
+    process.exit(1);
+  });
+}
