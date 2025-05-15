@@ -221,9 +221,32 @@ async function main() {
 }
 
 // Only run main() if this file is being executed directly
-if (require.main === module) {
-  main().catch(error => {
-    console.error('Unexpected error:', error);
-    process.exit(1);
-  });
-}
+// In ESM, we can check if the current file is the entry point by comparing import.meta.url
+// against the node process argv[1] converted to URL format
+const isMainModule = async () => {
+  if (typeof process !== 'undefined') {
+    const mainModule = process.argv[1];
+    if (mainModule) {
+      try {
+        const { fileURLToPath } = await import('url');
+        const { dirname } = await import('path');
+        const modulePath = fileURLToPath(import.meta.url);
+        const moduleDir = dirname(modulePath);
+        return mainModule.startsWith(moduleDir);
+      } catch (e) {
+        return false;
+      }
+    }
+  }
+  return false;
+};
+
+// Self-invoking async function to allow top-level await
+(async () => {
+  if (await isMainModule()) {
+    main().catch(error => {
+      console.error('Unexpected error:', error);
+      process.exit(1);
+    });
+  }
+})();
