@@ -40,14 +40,46 @@ export function defineConfig(config: CraftCodegenConfig): CraftCodegenConfig {
 // Default export for testing
 export default main;
 
+// Flag to indicate whether we're running in a test environment
+export const isTestEnvironment = () => process.env.NODE_ENV === 'test' || process.env.VITEST === 'true';
+
+// Get the current working directory with a fallback
+function getCwd() {
+  try {
+    const cwd = process.cwd();
+    if (cwd === undefined || cwd === null) {
+      return '/tmp/test-dir';
+    }
+    return cwd;
+  } catch (error) {
+    return '/tmp/test-dir';
+  }
+}
+
 // Load environment variables from .env files
 function loadEnvVariables() {
-  const envFiles = ['.env', '.env.local'];
-  for (const file of envFiles) {
-    const envPath = resolve(process.cwd(), file);
-    if (existsSync(envPath)) {
-      dotenv.config({ path: envPath });
+  // Skip loading environment variables in test environment
+  if (isTestEnvironment()) {
+    return;
+  }
+
+  try {
+    const envFiles = ['.env', '.env.local'];
+    for (const file of envFiles) {
+      try {
+        const cwd = getCwd();
+        if (cwd) {
+          const envPath = resolve(cwd, file);
+          if (envPath && existsSync(envPath)) {
+            dotenv.config({ path: envPath });
+          }
+        }
+      } catch (error) {
+        console.error(`Error loading environment variables from ${file}:`, error);
+      }
     }
+  } catch (error) {
+    console.error('Error loading environment variables:', error);
   }
 }
 
@@ -62,7 +94,7 @@ function checkForOverrideConfig() {
   // Check for standard codegen config files
   const standardConfigFiles = ['codegen.ts', 'codegen.js', 'codegen.yml', 'codegen.yaml', 'codegen.json'];
   for (const file of standardConfigFiles) {
-    const configPath = resolve(process.cwd(), file);
+    const configPath = resolve(getCwd(), file);
     if (existsSync(configPath)) {
       return configPath;
     }
@@ -76,8 +108,8 @@ async function loadCraftConfig() {
   process.stdout.write('Loading craft config...\n');
 
   // Check if craft.config.ts exists
-  const configPath = resolve(process.cwd(), 'craft.config.ts');
-  const configJsPath = resolve(process.cwd(), 'craft.config.js');
+  const configPath = resolve(getCwd(), 'craft.config.ts');
+  const configJsPath = resolve(getCwd(), 'craft.config.js');
 
   process.stdout.write(`Checking for config files:\n- ${configPath}\n- ${configJsPath}\n`);
 
@@ -120,7 +152,7 @@ async function main() {
 
   // Load environment variables
   loadEnvVariables();
-  process.stdout.write(`Current working directory: ${process.cwd()}\n`);
+  process.stdout.write(`Current working directory: ${getCwd()}\n`);
 
   // Check for override config
   const overrideConfigPath = checkForOverrideConfig();
@@ -131,7 +163,11 @@ async function main() {
     try {
       execSync(`npx graphql-codegen ${args}`, { stdio: 'inherit' });
     } catch (error) {
-      process.exit(1);
+      if (isTestEnvironment()) {
+        throw error;
+      } else {
+        process.exit(1);
+      }
     }
     return;
   }
@@ -159,13 +195,23 @@ async function main() {
 
   // Validate required configuration
   if (!schema) {
-    console.error('Error: schema is required in craft.config.ts or as CRAFT_API_URL or CRAFT_GRAPHQL_SCHEMA environment variable');
-    process.exit(1);
+    const errorMessage = 'Error: schema is required in craft.config.ts or as CRAFT_API_URL or CRAFT_GRAPHQL_SCHEMA environment variable';
+    console.error(errorMessage);
+    if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+      throw new Error(errorMessage);
+    } else {
+      process.exit(1);
+    }
   }
 
   if (!apiKey) {
-    console.error('Error: apiKey is required in craft.config.ts or as CRAFT_API_KEY environment variable');
-    process.exit(1);
+    const errorMessage = 'Error: apiKey is required in craft.config.ts or as CRAFT_API_KEY environment variable';
+    console.error(errorMessage);
+    if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+      throw new Error(errorMessage);
+    } else {
+      process.exit(1);
+    }
   }
 
   // Prepare headers for schema introspection
@@ -177,7 +223,7 @@ async function main() {
   // Create output directory if it doesn't exist
   try {
     // Use the already imported fs module
-    mkdirSync(resolve(process.cwd(), output), { recursive: true });
+    mkdirSync(resolve(getCwd(), output), { recursive: true });
   } catch (error) {
     // Ignore if directory already exists
   }
@@ -230,7 +276,7 @@ async function main() {
     process.stdout.write('GraphQL types generated successfully!\n');
 
     // Verify the output directory was created
-    const outputPath = resolve(process.cwd(), output);
+    const outputPath = resolve(getCwd(), output);
     process.stdout.write(`Checking if output directory exists: ${outputPath}\n`);
     if (existsSync(outputPath)) {
       process.stdout.write(`Output directory exists. Contents: ${JSON.stringify(readdirSync(outputPath))}\n`);
@@ -240,12 +286,20 @@ async function main() {
   } catch (error) {
     process.stdout.write(`Error generating GraphQL types: ${error}\n`);
     console.error('Error generating GraphQL types:', error);
-    process.exit(1);
+    if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+      throw error;
+    } else {
+      process.exit(1);
+    }
   }
 }
 
 main().catch(error => {
   process.stdout.write(`Unexpected error: ${error}\n`);
   console.error('Unexpected error:', error);
-  process.exit(1);
+  if (process.env.NODE_ENV === 'test' || process.env.VITEST) {
+    throw error;
+  } else {
+    process.exit(1);
+  }
 });
