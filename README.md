@@ -96,35 +96,6 @@ import myQuery from './path/to/query.graphql';
 const typedResult = await client.query(myQuery);
 ```
 
-#### Preview Mode
-
-The package includes a dedicated module for working with preview mode:
-
-```typescript
-import { createPreviewClient, isPreviewMode } from 'craft-api-client/preview';
-
-// Create a client with preview mode enabled
-const previewClient = createPreviewClient({
-  apiKey: process.env.CRAFT_API_KEY || '',
-  baseUrl: process.env.CRAFT_API_URL || '',
-}, process.env.CRAFT_PREVIEW_TOKEN);
-
-// Check if a client is in preview mode
-if (isPreviewMode(previewClient)) {
-  console.log('Preview mode is enabled');
-}
-
-// Use the preview client just like a regular client
-const result = await previewClient.query(gql`
-  query GetEntries {
-    entries {
-      id
-      title
-    }
-  }
-`);
-```
-
 #### Setting Up Codegen
 
 The package includes a template for setting up GraphQL Code Generator in your application:

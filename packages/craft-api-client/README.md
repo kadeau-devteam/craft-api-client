@@ -75,37 +75,6 @@ declare module '*.graphql' {
 
 This allows TypeScript to recognize imports of `.graphql` files as `DocumentNode` objects.
 
-### Preview Mode
-
-The package includes a dedicated module for working with preview mode:
-
-```typescript
-import { createPreviewClient, isPreviewMode } from 'craft-api-client/preview';
-
-// Create a client with preview mode enabled
-const previewClient = createPreviewClient({
-  apiKey: process.env.CRAFT_API_KEY || '',
-  baseUrl: process.env.CRAFT_API_URL || '',
-}, process.env.CRAFT_PREVIEW_TOKEN);
-
-// Check if a client is in preview mode
-if (isPreviewMode(previewClient)) {
-  console.log('Preview mode is enabled');
-}
-
-// Use the preview client just like a regular client
-const result = await previewClient.query(gql`
-  query GetEntries {
-    entries {
-      id
-      title
-    }
-  }
-`);
-```
-
-For more detailed usage instructions, see the [main README](../../README.md).
-
 ## GraphQL Code Generation
 
 The package includes a CLI tool for generating GraphQL types and utilities based on your schema.

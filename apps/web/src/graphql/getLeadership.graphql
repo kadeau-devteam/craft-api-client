@@ -1,0 +1,8 @@
+query getLeadership {
+  leadershipEntries {
+    ...on profile_Entry {
+      uid
+      name: fname
+    }
+  }
+}

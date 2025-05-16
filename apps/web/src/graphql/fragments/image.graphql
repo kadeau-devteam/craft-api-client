@@ -1,8 +1,0 @@
-fragment CTAImageDetails on images_Asset {
-  uid
-  src: url @transform(width: 3840, height: 2438)
-  alt
-  height
-  width
-  mimetype: mimeType
-}

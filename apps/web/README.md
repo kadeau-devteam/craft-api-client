@@ -56,6 +56,50 @@ pnpm build
 - Demonstrates how to use the craft-api-client in a Next.js application
 - Shows how to configure environment variables for the client
 - Provides a simple UI for testing the API connection
+- Includes an example of using preview/draft mode with Next.js 15
+
+## Preview Mode / Draft Mode
+
+This application includes an example of how to use the Craft API client with Next.js 15 draft mode to preview draft content from Craft CMS.
+
+### How It Works
+
+1. The draft mode API route (`/api/enable-draft`) enables Next.js draft mode
+2. When draft mode is enabled, we include the preview token in the Craft API client
+3. The preview token allows the API to return draft content
+4. The page displays different content based on whether draft mode is enabled
+
+### Environment Variables
+
+To use the preview functionality, you need to set the following environment variables:
+
+```
+CRAFT_PREVIEW_TOKEN=your-preview-token  # Required for preview mode
+DRAFT_SECRET_TOKEN=your-secret-token    # Secret token to protect the draft mode API route
+```
+
+### Usage
+
+1. Visit `/preview-example` to see the preview example page
+2. To enable draft mode, visit: `/api/enable-draft?secret=YOUR_SECRET_TOKEN`
+3. To disable draft mode, click the "Exit Draft Mode" button or visit: `/api/disable-draft`
+
+### Implementation Details
+
+The implementation consists of three main components:
+
+1. **Draft Mode API Routes**:
+   - `/api/enable-draft`: Enables draft mode and redirects to the preview page
+   - `/api/disable-draft`: Disables draft mode and redirects back to the preview page
+
+2. **Preview Example Page**:
+   - `/preview-example`: Demonstrates how to use the Craft API client with draft mode
+   - Conditionally includes the preview token based on draft mode status
+   - Shows different UI based on draft mode status
+
+3. **Craft API Client Configuration**:
+   - Uses the `previewToken` parameter when creating the client
+   - Only includes the token when draft mode is enabled
 
 ## Testing
 

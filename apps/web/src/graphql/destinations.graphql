@@ -1,9 +1,0 @@
-query Destinations {
-  destinationsEntries {
-    ... on destination_Entry {
-      id
-      title
-      slug
-    }
-  }
-}

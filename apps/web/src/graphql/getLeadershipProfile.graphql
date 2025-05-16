@@ -1,0 +1,8 @@
+query getLeadershipProfile ($uri: [String]!) {
+  entry(section: ["leadership"], uri: $uri) {
+    ...on profile_Entry {
+      uid
+      name: fname
+    }
+  }
+}

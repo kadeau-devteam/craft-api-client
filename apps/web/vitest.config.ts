@@ -21,7 +21,7 @@ export default defineConfig({
       '@': resolve(__dirname, './src'),
       'craft-api-client': resolve(__dirname, '../../packages/craft-api-client/src/index.ts'),
       'craft-api-client/preview': resolve(__dirname, '../../packages/craft-api-client/src/preview.ts'),
-      '../graphql/getPages.graphql': resolve(__dirname, './src/test/graphql/getPages.graphql'),
+      '../graphql/getPages.graphql': resolve(__dirname, './src/test/graphql/getLeadership.graphql'),
     },
   },
 });
