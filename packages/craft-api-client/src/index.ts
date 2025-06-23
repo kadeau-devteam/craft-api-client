@@ -72,6 +72,27 @@ export type CraftClient = {
    */
   query: <T = any, V extends Record<string, any> = Record<string, any>>(document: string | DocumentNode, variables?: V) => Promise<T>;
   config: CraftClientConfig;
+  /**
+   * Optional SDK that can be attached to the client.
+   * This allows you to use a custom GraphQL SDK with the client.
+   * 
+   * @example
+   * ```typescript
+   * import { GraphQLClient } from 'graphql-request';
+   * import { getSdk } from './graphql/sdk';
+   * import { createCraftClient } from 'craft-api-client';
+   * 
+   * const client = createCraftClient({
+   *   apiKey: 'your-api-key',
+   *   baseUrl: 'your-api-url',
+   *   sdk: getSdk(new GraphQLClient('your-api-url'))
+   * });
+   * 
+   * // Now you can use the SDK methods
+   * const result = await client.sdk.yourQuery();
+   * ```
+   */
+  sdk?: any;
 };
 
 export function createCraftClient(config: CraftClientConfig): CraftClient {
@@ -82,6 +103,7 @@ export function createCraftClient(config: CraftClientConfig): CraftClient {
       return rawClient.request<T>(document, variables);
     },
     config: (rawClient as any).config,
+    sdk: (rawClient as any).sdk,
   };
 }
 

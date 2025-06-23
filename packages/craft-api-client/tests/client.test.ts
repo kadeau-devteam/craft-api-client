@@ -110,4 +110,45 @@ describe('CraftClient', () => {
     )).rejects.toThrow('GraphQL Error: Test error');
   });
 
+  it('should support attaching a custom SDK', () => {
+    // Create a mock SDK
+    const mockSdk = {
+      getEntries: vi.fn().mockResolvedValue({ data: { entries: [] } }),
+      getEntry: vi.fn().mockResolvedValue({ data: { entry: {} } })
+    };
+
+    // Create a client with the SDK
+    const clientWithSdk = craftClient({
+      apiKey: '4G6leis24EdDxmrJN7uAypEiUIDuoq7u',
+      baseUrl: 'https://mercury-sign.frb.io/api',
+      sdk: mockSdk
+    });
+
+    // Check that the SDK is attached
+    expect(clientWithSdk).toHaveProperty('sdk');
+    expect(clientWithSdk.sdk).toBe(mockSdk);
+  });
+
+  it('should allow using the SDK methods', async () => {
+    // Create a mock SDK
+    const mockSdk = {
+      getEntries: vi.fn().mockResolvedValue({ data: { entries: [] } }),
+      getEntry: vi.fn().mockResolvedValue({ data: { entry: { id: '123', title: 'Test' } } })
+    };
+
+    // Create a client with the SDK
+    const clientWithSdk = craftClient({
+      apiKey: '4G6leis24EdDxmrJN7uAypEiUIDuoq7u',
+      baseUrl: 'https://mercury-sign.frb.io/api',
+      sdk: mockSdk
+    });
+
+    // Use the SDK method
+    const result = await clientWithSdk.sdk.getEntry();
+
+    // Check that the SDK method was called
+    expect(mockSdk.getEntry).toHaveBeenCalled();
+    expect(result).toEqual({ data: { entry: { id: '123', title: 'Test' } } });
+  });
+
 });

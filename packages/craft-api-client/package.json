@@ -14,17 +14,10 @@
       "types": "./dist/preview.d.ts",
       "default": "./dist/preview.js"
     },
-    "./dist/craft-codegen": {
-      "types": "./dist/craft-codegen.d.ts",
-      "default": "./dist/craft-codegen.js"
-    },
     "./config": {
       "types": "./dist/config.d.ts",
       "default": "./dist/config.js"
     }
-  },
-  "bin": {
-    "craft-codegen": "./dist/craft-codegen.js"
   },
   "sideEffects": false,
   "engines": {
@@ -37,7 +30,7 @@
     "LICENSE"
   ],
   "scripts": {
-    "build": "pnpm run codegen && tsup",
+    "build": "tsup",
     "test": "vitest run",
     "test:unit": "vitest run tests/*.test.ts",
     "test:integration": "vitest run tests/integration/*.test.ts",
@@ -47,8 +40,7 @@
     "prebuild": "pnpm clean",
     "prepublishOnly": "pnpm test && pnpm build",
     "publish": "npm publish --access public",
-    "dev": "pnpm build --watch",
-    "codegen": "graphql-codegen --config codegen.ts"
+    "dev": "pnpm build --watch"
   },
   "keywords": [
     "craft",
@@ -73,15 +65,9 @@
     "dotenv": "^16.3.1",
     "graphql": "^16.8.1",
     "graphql-request": "^6.1.0",
-    "lilconfig": "^3.0.0",
-    "@graphql-codegen/cli": "^5.0.0",
-    "@graphql-codegen/client-preset": "^4.1.0",
-    "@graphql-codegen/schema-ast": "^4.1.0"
+    "lilconfig": "^3.0.0"
   },
   "devDependencies": {
-    "@graphql-codegen/typed-document-node": "^5.0.1",
-    "@graphql-codegen/typescript": "^4.0.1",
-    "@graphql-codegen/typescript-operations": "^4.0.1",
     "@typescript-eslint/eslint-plugin": "^8.29.0",
     "@typescript-eslint/parser": "^8.29.0",
     "eslint": "^9.23.0",

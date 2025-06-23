@@ -75,86 +75,83 @@ declare module '*.graphql' {
 
 This allows TypeScript to recognize imports of `.graphql` files as `DocumentNode` objects.
 
-## GraphQL Code Generation
+## Using a Custom GraphQL SDK
 
-The package includes a CLI tool for generating GraphQL types and utilities based on your schema.
+You can attach a custom GraphQL SDK to the client, which allows you to use typed operations with the client.
 
 ### Basic Usage
 
-1. Add a script to your package.json:
+1. Create your GraphQL SDK using a tool like [GraphQL Code Generator](https://the-guild.dev/graphql/codegen) or any other method.
 
-```json
-{
-  "scripts": {
-    "codegen": "craft-codegen"
-  }
-}
-```
-
-3. Create a `craft.config.ts` file in your project root:
+2. Attach the SDK to the client when creating it:
 
 ```typescript
-import { defineConfig } from 'craft-api-client/config';
+import { createCraftClient } from 'craft-api-client';
+import { GraphQLClient } from 'graphql-request';
+import { getSdk } from './graphql/sdk';
 
-export default defineConfig({
-  // The URL or local file path to the GraphQL schema (required)
-  schema: 'https://your-craft-site.com/api/graphql',
-
-  // API key for authentication (required)
-  apiKey: 'your-api-key',
-
-  // Glob pattern(s) for your GraphQL documents (optional)
-  documents: [
-    'src/**/*.{ts,tsx,js,jsx,graphql,astro}',
-    'app/**/*.{ts,tsx,js,jsx,graphql,astro}',
-    '!**/node_modules/**'
-  ],
-
-  // The output directory for generated files (optional)
-  output: './src/generated/craft-api/',
+// Create a client instance with SDK
+const client = createCraftClient({
+  apiKey: 'your-craft-api-key',
+  baseUrl: 'https://your-craft-site.com/api',
+  sdk: getSdk(new GraphQLClient('https://your-craft-site.com/api', {
+    headers: {
+      Authorization: `Bearer your-craft-api-key`,
+    },
+  }))
 });
+
+// Now you can use the SDK methods directly through the client
+const result = await client.sdk.getEntries();
 ```
 
-4. Run the codegen command:
+### Using with Next.js
 
-```bash
-pnpm codegen
-```
-
-### Import Paths
-
-You can import the `defineConfig` function using either of these import paths:
+Here's an example of how to use the client with a custom SDK in a Next.js application:
 
 ```typescript
-// Recommended way
-import { defineConfig } from 'craft-api-client/config';
+import { GraphQLClient } from 'graphql-request';
+import { getSdk } from './graphql/sdk';
+import { createCraftClient } from 'craft-api-client';
+import { cookies, draftMode } from 'next/headers';
 
-// Alternative way (also supported)
-import { defineConfig } from 'craft-api-client/dist/craft-codegen';
-```
+/**
+ * Creates and returns a GraphQL client for the Craft CMS API
+ * with support for draft mode and authentication.
+ */
+export async function getCraftClient() {
+  const cookiesStore = await cookies();
+  const { isEnabled } = await draftMode();
+  const token = cookiesStore.get('token')?.value;
 
+  // Base headers
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${process.env.CRAFT_API_KEY}`,
+    'Content-Type': 'application/json',
+  };
 
-### Configuration
+  // Conditionally add X-Craft-Token if draft mode is enabled and token exists
+  if (isEnabled && token) {
+    headers['X-Craft-Token'] = token;
+  }
 
-The `craft-codegen` script prioritizes loading configuration from `craft.config.ts` in your project root. You can also use environment variables as an alternative or override for values not found in `craft.config.ts`.
+  const graphqlClient = new GraphQLClient(process.env.CRAFT_API_URL || '', { headers });
 
-#### Environment Variables
+  const client = createCraftClient({
+    apiKey: process.env.CRAFT_API_KEY || '',
+    baseUrl: process.env.CRAFT_API_URL || '',
+    previewToken: isEnabled && token ? token : undefined,
+    sdk: getSdk(graphqlClient)
+  });
 
-- `CRAFT_GRAPHQL_SCHEMA`: The URL or local file path to the GraphQL schema
-- `CRAFT_API_KEY`: An API key to be used in the "Authorization: Bearer <apiKey>" header
-
-#### Advanced Usage
-
-If you need more control over the code generation process, you can create your own `codegen.ts` file or use the `--config` flag to specify a custom configuration file.
+  return client;
+}
 
 ## Development
 
 ```bash
 # Install dependencies
 pnpm install
-
-# Generate GraphQL types and SDK
-pnpm codegen
 
 # Run tests
 pnpm test
@@ -170,7 +167,7 @@ The package uses [tsup](https://github.com/egoist/tsup) for building. The build 
 If you modify the build command in `package.json`, make sure it doesn't override the entry points specified in `tsup.config.ts`. The correct build command should be:
 
 ```bash
-pnpm run codegen && tsup
+pnpm run build
 ```
 
 This will ensure that both modules are built correctly and can be imported in consuming applications.
