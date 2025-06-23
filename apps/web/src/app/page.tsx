@@ -1,18 +1,10 @@
-import { createCraftClient, gql } from 'craft-api-client';
+
+import {ping} from "@/api/ping";
 
 export default async function Home() {
-  const client = createCraftClient({
-    apiKey: process.env.CRAFT_API_KEY || '',
-    baseUrl: process.env.CRAFT_API_URL || '',
-    previewToken: process.env.CRAFT_PREVIEW_TOKEN || undefined
-  });
 
   // Use a direct GraphQL query to test the connection to the Craft CMS API
-  const pingResult = await client.query<{ ping: boolean }>(gql`
-    {
-      ping
-    }
-  `);
+  const pingResult = ping();
 
   return (
     <main>
