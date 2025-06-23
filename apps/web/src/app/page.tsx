@@ -1,5 +1,4 @@
-import { createCraftClient } from 'craft-api-client';
-import {GetLeadershipDocument, GetLeadershipQuery, GetLeadershipQueryVariables} from "@/generated/craft-api/graphql";
+import { createCraftClient, gql } from 'craft-api-client';
 
 export default async function Home() {
   const client = createCraftClient({
@@ -8,16 +7,19 @@ export default async function Home() {
     previewToken: process.env.CRAFT_PREVIEW_TOKEN || undefined
   });
 
-  // Use imported GraphQL document for the destinations query
-  const {leadershipEntries} = await client.query<GetLeadershipQuery, GetLeadershipQueryVariables>(
-    GetLeadershipDocument
-  );
+  // Use a direct GraphQL query to test the connection to the Craft CMS API
+  const pingResult = await client.query<{ ping: boolean }>(gql`
+    {
+      ping
+    }
+  `);
 
   return (
     <main>
       <h1>Example of using GraphQL queries in Next.js</h1>
 
-      <pre>{JSON.stringify(leadershipEntries, null, 2)}</pre>
+      <h2>Ping Result:</h2>
+      <pre>{JSON.stringify(pingResult, null, 2)}</pre>
     </main>
   );
 }
